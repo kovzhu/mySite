@@ -184,4 +184,4 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 if __name__ == '__main__':
     # You MUST run flask db init, flask db migrate, and flask db upgrade 
     # in the terminal before running this script for the first time.
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

@@ -109,6 +109,9 @@
         }
 
         /* Image Styles */
+        .image-area {
+            background-color: #f8f9fa; /* Match the body background */
+        }
         .image-area img {
             height: 100%;
             width: auto;
@@ -117,6 +120,7 @@
             right: 0;
             top: 0;
             opacity: 0.9;
+            mix-blend-mode: normal; /* Ensure normal blending */
         }
     </style>
 </head>
@@ -125,7 +129,7 @@
 <div class="maliko-grid">
     
     <div class="grid-header">
-        <div class="logo">Kunfeng</div>
+        <div class="logo">Observe. Explore. Discover</div>
         <div class="main-nav ms-auto d-flex align-items-center">
             <a href="#projects" class="nav-active">portfolio</a>
             <a href="#about">about me</a>
@@ -163,9 +167,6 @@
 
     <div class="grid-right-sidebar"></div>
 
-    <div class="footer-snippet">
-        <span class="vertical-text" style="writing-mode: horizontal-tb; transform: none; color: #343a40;">Note, This is my dog, not me</span>
-    </div>
 
 </div>
 <section id="about" class="container py-5 mt-5">
