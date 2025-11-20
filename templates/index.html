@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Base Styles: Use Inter for headings, Roboto Mono for smaller text */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #343a40;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- Custom Grid Layout for Hero Section --- */
+        .maliko-grid {
+            display: grid;
+            /* 4 Columns: Left Sidebar, Main Content, Image Column, Right Border */
+            grid-template-columns: 50px 1fr 1fr 50px; 
+            /* 3 Rows: Header/Nav, Main Content, Footer Snippet */
+            grid-template-rows: 50px auto 1fr;
+            height: 100vh;
+            /* background-color: white; */
+            background: transparent;
+            padding: 0 10px; /* Minor padding for overall look */
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Border Lines */
+        .maliko-grid > div:not(.content-area) {
+            border: 1px solid #e9ecef;
+            border-top: none;
+            border-bottom: none;
+        }
+        
+        /* Grid Areas */
+        .grid-header { grid-area: 1 / 1 / 2 / 5; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #e9ecef; }
+        .grid-left-sidebar { grid-area: 2 / 1 / 4 / 2; position: relative; }
+        .grid-right-sidebar { grid-area: 2 / 4 / 4 / 5; }
+        .content-area { grid-area: 2 / 2 / 3 / 3; padding: 80px 40px; }
+        .image-area { grid-area: 2 / 3 / 4 / 4; overflow: hidden; position: relative; }
+        .footer-snippet { grid-area: 3 / 2 / 4 / 4; padding: 20px 40px; border-top: 1px solid #e9ecef; }
+
+
+        /* Header/Nav Styles */
+        .logo { font-size: 24px; font-weight: 900; }
+        .main-nav a { 
+            color: #343a40; 
+            text-decoration: none; 
+            font-weight: 500; 
+            margin-right: 25px; 
+            font-size: 14px;
+        }
+        .main-nav a:hover { color: #007bff; }
+        .nav-active { border-bottom: 2px solid #343a40; padding-bottom: 5px; }
+
+
+        /* Left Sidebar Vertical Text */
+        .vertical-text {
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            font-family: 'Roboto Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #ccc;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(180deg);
+        }
+
+        /* Content Styles */
+        .hero-title {
+            font-size: 68px; /* Big, bold text */
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 30px;
+        }
+        .hero-title .name-part {
+            font-size: 72px; /* Emphasize the name */
+        }
+        .maliko-dot {
+            color: #007bff; /* Blue dot from the image */
+        }
+        .hero-text {
+            font-size: 16px;
+            line-height: 1.6;
+            width: 80%;
+            margin-bottom: 30px;
+            color: #6c757d;
+        }
+        .btn-consult {
+            background-color: #343a40;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .btn-consult:hover {
+            background-color: black;
+            color: white;
+        }
+
+        /* Image Styles */
+        .image-area img {
+            height: 100%;
+            width: auto;
+            object-fit: cover;
+            position: absolute;
+            right: 0;
+            top: 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="maliko-grid">
+    
+    <div class="grid-header">
+        <div class="logo">Kunfeng</div>
+        <div class="main-nav ms-auto d-flex align-items-center">
+            <a href="#projects" class="nav-active">portfolio</a>
+            <a href="#about">about me</a>
+            <a href="#blog">my blog</a>
+            <a href="#">reviews</a>
+            <a href="#contact">contact me</a>
+            
+            <div class="ms-4">
+                <span class="ms-3">🔍</span> 
+                <span class="ms-3">🛒</span> 
+                <span class="ms-3">👤</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid-left-sidebar">
+        <div class="vertical-text">material process design</div>
+    </div>
+
+    <div class="content-area">
+        <h1 class="hero-title">
+            Hello World, I am <br>
+            <span class="name-part">Kunfeng<span class="maliko-dot">.</span></span>
+        </h1>
+        <p class="hero-text">
+            From they fine john he give of rich he. They age and draw mrs like. Improving end distrusts may instantly was household applauded incommode.
+        </p>
+        <a href="#" class="btn-consult">schedule free consultation</a>
+    </div>
+
+    <div class="image-area">
+    <img src="{{ url_for('static', filename='personal_images/my_photo.png') }}" 
+         alt="My photo" 
+         class="img-fluid"> </div>
+
+    <div class="grid-right-sidebar"></div>
+
+    <div class="footer-snippet">
+        <span class="vertical-text" style="writing-mode: horizontal-tb; transform: none; color: #343a40;">Note, This is my dog, not me</span>
+    </div>
+
+</div>
+<section id="about" class="container py-5 mt-5">
+    <h2 class="text-center mb-4">✨ About Me</h2>
+    </section>
+
+<section id="projects" class="container py-5 bg-light">
+    <h2 class="text-center mb-5">🚀 Projects</h2>
+    
+    <p class="text-center"><a href="{{ url_for('add_project') }}" class="btn btn-info mb-4">🖼️ Add New Project</a></p>
+
+    <div class="row">
+        {% for project in projects %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card project-card">
+                {% if project.image_filename %}
+                    <img src="{{ url_for('static', filename='project_images/' + project.image_filename) }}" 
+                         class="card-img-top" alt="{{ project.title }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ project.title }} <span class="badge bg-secondary">{{ project.year }}</span></h5>
+                    <p class="card-text">{{ project.description }}</p>
+                    {% if project.url %}
+                        <a href="{{ project.url }}" target="_blank" class="card-link">View Project →</a>
+                    {% else %}
+                        <span class="text-muted">Code Coming Soon</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        {% if not projects %}
+        <p class="text-center text-muted">No projects found. Add some data to your SQLite database!</p>
+        {% endif %}
+        
+    </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
