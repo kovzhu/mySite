@@ -114,6 +114,78 @@
             color: #fff;
         }
 
+        /* --- Upload Form --- */
+        .upload-section {
+            max-width: 600px;
+            margin: 0 auto 40px;
+            padding: 20px;
+            background: var(--subtle-gray);
+            border-radius: 8px;
+            display: none; /* Hidden by default */
+        }
+
+        .upload-section.show {
+            display: block; /* Show when toggled */
+        }
+
+        .upload-toggle-btn {
+            background-color: #343a40;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            margin: 0 auto 20px;
+            display: block;
+        }
+
+        .upload-toggle-btn:hover {
+            background-color: #495057;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .upload-btn {
+            background-color: #343a40;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        .upload-btn:hover {
+            background-color: #495057;
+        }
+
         /* --- Container --- */
         .container {
             max-width: 1600px;
@@ -201,6 +273,27 @@
             color: rgba(255,255,255,0.8);
         }
 
+        /* --- Delete Button --- */
+        .delete-btn {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: white;
+            color: #dc3545;
+        }
+
         /* --- Heart Button --- */
         .heart-btn {
             background: rgba(255,255,255,0.2);
@@ -275,6 +368,38 @@
 
         .modal-title { font-size: 2rem; font-weight: 700; margin: 0; }
         .modal-date { color: #888; margin-top: 5px; }
+
+        /* --- Flash Messages --- */
+        .flash-messages {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .flash-message {
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
 
         /* --- Mobile --- */
         @media (max-width: 600px) {
@@ -354,9 +479,14 @@
                 font-size: 0.8rem;
             }
             
-            .heart-btn {
+            .heart-btn, .delete-btn {
                 padding: 6px 10px;
                 font-size: 0.8rem;
+            }
+
+            .upload-section {
+                margin: 0 15px 30px;
+                padding: 15px;
             }
         }
     </style>
@@ -383,104 +513,95 @@
         </div>
     </div>
 
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
     <header>
         <h1>Daily observations.</h1>
+        
+        <!-- Upload Toggle Button -->
+        <button class="upload-toggle-btn" onclick="toggleUploadForm()">📷 Upload Photo</button>
+        
+        <!-- Upload Form -->
+        <div class="upload-section">
+            <h3 style="margin-bottom: 20px; text-align: center;">Upload New Photo</h3>
+            <form class="upload-form" action="{{ url_for('upload_photo') }}" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="title">Photo Title</label>
+                    <input type="text" id="title" name="title" placeholder="Optional - will use filename if empty">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="3"></textarea>
+                </div>
+                
+                
+                <div class="form-group">
+                    <label for="photo">Photo File *</label>
+                    <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.gif" required>
+                </div>
+                
+                <button type="submit" class="upload-btn">Upload Photo</button>
+            </form>
+        </div>
+
         <!-- Navigation Links -->
         <nav class="month-nav">
-            <a href="#nov23">November '23</a>
-            <a href="#oct23">October '23</a>
+            {% for month in photos_by_month.keys() %}
+                <a href="#{{ month }}">{{ month|replace('23', ' 2023')|replace('24', ' 2024')|title }}</a>
+            {% endfor %}
         </nav>
     </header>
 
     <div class="container">
-
-        <!-- November Section -->
-        <div id="nov23" class="month-section">
-            <div class="month-header">November 2023</div>
-            <div class="photo-grid">
-                
-                <!-- Photo Item -->
-                <div class="photo-card" onclick="openModal(this)">
-                    <img src="https://images.unsplash.com/photo-1494500764479-0c8f2919a3d8?q=80&w=800&auto=format&fit=crop" alt="Abstract Building">
-                    <div class="photo-info">
-                        <div class="text-content">
-                            <div class="photo-title">Urban Geometry</div>
-                            <div class="photo-date">Nov 21, 2023</div>
-                        </div>
-                        <!-- Heart Button -->
-                        <button class="heart-btn" onclick="toggleHeart(event, this)">
-                            <span>♥</span> <span class="count">12</span>
-                        </button>
+        {% if photos_by_month %}
+            {% for month, photos in photos_by_month.items() %}
+                <!-- Month Section -->
+                <div id="{{ month }}" class="month-section">
+                    <div class="month-header">{{ month|replace('23', ' 2023')|replace('24', ' 2024')|title }}</div>
+                    <div class="photo-grid">
+                        {% for photo in photos %}
+                            <!-- Photo Item -->
+                            <div class="photo-card" onclick="openModal(this)">
+                                <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
+                                <div class="photo-info">
+                                    <div class="text-content">
+                                        <div class="photo-title">{{ photo.title }}</div>
+                                        <div class="photo-date">{{ photo.created_at.strftime('%b %d, %Y') }}</div>
+                                    </div>
+                                    <div style="display: flex; gap: 8px;">
+                                        <!-- Heart Button -->
+                                        <button class="heart-btn" onclick="toggleHeart(event, this)">
+                                            <span>♥</span> <span class="count">0</span>
+                                        </button>
+                                        <!-- Delete Button -->
+                                        <form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this photo?')">
+                                            <button type="submit" class="delete-btn" onclick="event.stopPropagation()">
+                                                <span>🗑️</span> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 </div>
-
-                <!-- Photo Item -->
-                <div class="photo-card" onclick="openModal(this)">
-                    <img src="https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?q=80&w=800&auto=format&fit=crop" alt="Balloon">
-                    <div class="photo-info">
-                        <div class="text-content">
-                            <div class="photo-title">Morning Flight</div>
-                            <div class="photo-date">Nov 15, 2023</div>
-                        </div>
-                        <button class="heart-btn" onclick="toggleHeart(event, this)">
-                            <span>♥</span> <span class="count">8</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Photo Item -->
-                <div class="photo-card" onclick="openModal(this)">
-                    <img src="https://images.unsplash.com/photo-1501963917441-a7b8e220eb9c?q=80&w=800&auto=format&fit=crop" alt="Desk">
-                    <div class="photo-info">
-                        <div class="text-content">
-                            <div class="photo-title">Workspace Flow</div>
-                            <div class="photo-date">Nov 02, 2023</div>
-                        </div>
-                        <button class="heart-btn" onclick="toggleHeart(event, this)">
-                            <span>♥</span> <span class="count">24</span>
-                        </button>
-                    </div>
-                </div>
-
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 60px 20px; color: #666;">
+                <h3>No photos yet</h3>
+                <p>Upload your first photo using the form above!</p>
             </div>
-        </div>
-
-        <!-- October Section -->
-        <div id="oct23" class="month-section">
-            <div class="month-header">October 2023</div>
-            <div class="photo-grid">
-                
-                <!-- Photo Item -->
-                <div class="photo-card" onclick="openModal(this)">
-                    <img src="https://images.unsplash.com/photo-1504280501179-fac52dd23685?q=80&w=800&auto=format&fit=crop" alt="Forest">
-                    <div class="photo-info">
-                        <div class="text-content">
-                            <div class="photo-title">Autumn Fade</div>
-                            <div class="photo-date">Oct 29, 2023</div>
-                        </div>
-                        <button class="heart-btn" onclick="toggleHeart(event, this)">
-                            <span>♥</span> <span class="count">19</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Photo Item -->
-                <div class="photo-card" onclick="openModal(this)">
-                    <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=800&auto=format&fit=crop" alt="City Street">
-                    <div class="photo-info">
-                        <div class="text-content">
-                            <div class="photo-title">City Lights</div>
-                            <div class="photo-date">Oct 12, 2023</div>
-                        </div>
-                        <button class="heart-btn" onclick="toggleHeart(event, this)">
-                            <span>♥</span> <span class="count">42</span>
-                        </button>
-                    </div>
-                </div>
-                
-            </div>
-        </div>
-
+        {% endif %}
     </div>
 
     <!-- THE FULL PAGE MODAL TEMPLATE -->
@@ -505,6 +626,21 @@
     </div>
 
     <script>
+        // --- Upload Form Toggle ---
+        function toggleUploadForm() {
+            const uploadSection = document.querySelector('.upload-section');
+            const toggleBtn = document.querySelector('.upload-toggle-btn');
+            
+            uploadSection.classList.toggle('show');
+            
+            // Update button text
+            if (uploadSection.classList.contains('show')) {
+                toggleBtn.textContent = '✖️ Cancel Upload';
+            } else {
+                toggleBtn.textContent = '📷 Upload Photo';
+            }
+        }
+
         // --- Logic for the Heart/Support Counter ---
         function toggleHeart(event, btn) {
             // Prevent the click from triggering the photo modal
