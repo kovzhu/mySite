@@ -75,6 +75,12 @@ def about():
     return render_template("about.html")
 
 
+@app.route("/gallery")
+def gallery():
+    """Photo gallery page route."""
+    return render_template("gallery/photo_gallery.html")
+
+
 @app.route("/create", methods=["GET", "POST"])
 # @login_required # Add this once Flask-Login is set up
 def create():

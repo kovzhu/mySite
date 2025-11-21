@@ -22,9 +22,28 @@
             padding: 15px 0;
         }
         
+        .navbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
         .logo {
             font-size: 24px;
             font-weight: 900;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .main-nav {
+            display: flex;
+            align-items: center;
+            flex-wrap: nowrap;
+            margin-left: auto;
         }
         
         .main-nav a {
@@ -33,10 +52,18 @@
             font-weight: 500;
             margin-right: 25px;
             font-size: 14px;
+            white-space: nowrap;
+            padding-bottom: 5px;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.2s ease;
         }
         
         .main-nav a:hover {
             color: #007bff;
+        }
+        
+        .nav-active {
+            border-bottom-color: #343a40;
         }
         
         .about-container {
@@ -115,20 +142,108 @@
             background-color: black;
             color: white;
         }
+
+        /* --- MOBILE RESPONSIVE STYLES --- */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                padding: 0 15px;
+            }
+            
+            .logo {
+                font-size: 20px;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+            
+            .main-nav {
+                margin-left: 0;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .main-nav a {
+                margin-right: 15px;
+                font-size: 13px;
+                padding: 5px 0;
+            }
+            
+            .about-container {
+                padding: 40px 15px;
+            }
+            
+            .about-title {
+                font-size: 36px;
+            }
+            
+            .about-subtitle {
+                font-size: 16px;
+                padding: 0 10px;
+            }
+            
+            .qr-container {
+                padding: 25px;
+                max-width: 90%;
+            }
+            
+            .qr-title {
+                font-size: 20px;
+            }
+            
+            .qr-description {
+                font-size: 14px;
+            }
+            
+            .qr-image {
+                max-width: 250px;
+            }
+            
+            .btn-home {
+                padding: 10px 25px;
+                font-size: 14px;
+            }
+        }
+
+        /* --- SMALL MOBILE STYLES --- */
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 18px;
+            }
+            
+            .main-nav {
+                gap: 8px;
+            }
+            
+            .main-nav a {
+                margin-right: 10px;
+                font-size: 12px;
+            }
+            
+            .about-title {
+                font-size: 32px;
+            }
+            
+            .qr-container {
+                padding: 20px;
+            }
+            
+            .qr-image {
+                max-width: 200px;
+            }
+        }
     </style>
 </head>
 <body>
     <nav class="navbar">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="logo">Observe. Explore. Discover</div>
-                <div class="main-nav">
-                    <a href="{{ url_for('index') }}">Home</a>
-                    <a href="#about" class="nav-active">About Me</a>
-                    <a href="#projects">Portfolio</a>
-                    <a href="#blog">My Blog</a>
-                    <a href="#contact">Contact Me</a>
-                </div>
+        <div class="navbar-container">
+            <div class="logo">Observe. Explore. Discover</div>
+            <div class="main-nav">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('about') }}" class="nav-active">About Me</a>
+                <a href="#projects">Portfolio</a>
+                <a href="#blog">My Blog</a>
+                <a href="#contact">Contact Me</a>
             </div>
         </div>
     </nav>

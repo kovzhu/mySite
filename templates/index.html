@@ -41,7 +41,7 @@
         }
         
         /* Desktop Grid Areas */
-        .grid-header { grid-area: 1 / 1 / 2 / 5; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #e9ecef; background: #f8f9fa; z-index: 10; }
+        .grid-header { grid-area: 1 / 1 / 2 / 5; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #e9ecef; background: #f8f9fa; z-index: 10; justify-content: space-between; }
         .grid-left-sidebar { grid-area: 2 / 1 / 4 / 2; position: relative; }
         .grid-right-sidebar { grid-area: 2 / 4 / 4 / 5; }
         
@@ -231,11 +231,11 @@
         <div class="logo">Observe. Explore. Discover</div>
         
         <div class="main-nav ms-auto">
-            <a href="#projects" class="nav-active">gallery</a>
+            <a href="{{ url_for('gallery') }}" class="nav-active">gallery</a>
+            <a href="{{ url_for('about') }}">humanity</a>
+            <a href="#blog">art</a>
+            <a href="#">ideas</a>
             <a href="{{ url_for('about') }}">about me</a>
-            <a href="#blog">blogs</a>
-            <a href="#">reading</a>
-            <a href="#contact">humanity</a>
         </div>
         
         <div class="nav-icons ms-4">
@@ -313,8 +313,8 @@
     var typed = new Typed('#typed-text', {
         strings: [
             'I am Kunfeng<span class="maliko-dot">.</span>',
-            '<span style="color: #0d6efd">Observe.</span>',  
-            '<span style="color: #198754">Explore.</span>',  
+            '<span style="color: #0d6efd">Observation.</span>',  
+            '<span style="color: #198754">Exploration.</span>',  
             '<span style="color: #fd7e14">Discovery.</span>', 
             '<span style="color: #dc3545">格物.</span>',      
             '<span style="color: #6f42c1">致知.</span>'       
