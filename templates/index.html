@@ -326,10 +326,55 @@
                 gap: 15px;
             }
 
-            .gallery-item {
-                height: 250px;
-            }
+        .gallery-item {
+            height: 250px;
         }
+    }
+
+    /* Back to Top Button */
+    .back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background-color: #343a40;
+        color: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        z-index: 1000;
+        cursor: pointer;
+    }
+
+    .back-to-top:hover {
+        background-color: #495057;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    .back-to-top.visible {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Mobile responsive for back to top */
+    @media (max-width: 768px) {
+        .back-to-top {
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
+        }
+    }
     </style>
 </head>
 <body>
@@ -461,6 +506,11 @@
     </div>
 </section>
 
+<!-- Back to Top Button -->
+<a href="#" class="back-to-top" title="Back to Top">
+    ↑
+</a>
+
 <!-- Photo Modal -->
 <div id="photoModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -508,4 +558,25 @@
         document.getElementById('modalPhotoDate').textContent = date;
         modal.show();
     }
+
+    // Back to Top Functionality
+    const backToTopButton = document.querySelector('.back-to-top');
+    
+    // Show/hide back to top button based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            backToTopButton.classList.add('visible');
+        } else {
+            backToTopButton.classList.remove('visible');
+        }
+    });
+    
+    // Smooth scroll to top when clicked
+    backToTopButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
 </script>
