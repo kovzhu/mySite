@@ -114,13 +114,12 @@ def register():
     
     if request.method == "POST":
         username = request.form.get("username")
-        email = request.form.get("email")
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")
         
         # Validation
-        if not username or not email or not password:
-            flash("All fields are required!", "error")
+        if not username or not password:
+            flash("Username and password are required!", "error")
             return render_template("auth/register.html")
         
         if password != confirm_password:
@@ -131,12 +130,8 @@ def register():
             flash("Username already exists!", "error")
             return render_template("auth/register.html")
         
-        if User.query.filter_by(email=email).first():
-            flash("Email already registered!", "error")
-            return render_template("auth/register.html")
-        
-        # Create new user
-        new_user = User(username=username, email=email)
+        # Create new user with username as email (for compatibility)
+        new_user = User(username=username, email=f"{username}@example.com")
         new_user.set_password(password)
         
         db.session.add(new_user)

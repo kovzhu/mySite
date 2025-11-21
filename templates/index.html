@@ -348,9 +348,13 @@
         </div>
         
         <div class="nav-icons ms-4">
-            <span class="ms-3">🔍</span> 
-            <span class="ms-3">🛒</span> 
-            <span class="ms-3">👤</span>
+            {% if current_user.is_authenticated %}
+                <span class="ms-3" style="font-size: 14px; font-weight: 500; color: #343a40; padding-bottom: 5px;">{{ current_user.username }}</span>
+                <a href="{{ url_for('logout') }}" class="ms-3" style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">logout</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="ms-3" style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">register</a>
+                <a href="{{ url_for('login') }}" class="ms-3" style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">login</a>
+            {% endif %}
         </div>
     </div>
     
