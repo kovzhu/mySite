@@ -1,285 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Me - K.</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-            margin: 0;
-            padding: 0;
-        }
-        
-        .navbar {
-            background-color: white;
-            border-bottom: 1px solid #e9ecef;
-            padding: 15px 0;
-        }
-        
-        .navbar-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: 900;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-        
-        .main-nav {
-            display: flex;
-            align-items: center;
-            flex-wrap: nowrap;
-            margin-left: auto;
-        }
-        
-        .main-nav a {
-            color: #343a40;
-            text-decoration: none;
-            font-weight: 500;
-            margin-right: 25px;
-            font-size: 14px;
-            white-space: nowrap;
-            padding-bottom: 5px;
-            border-bottom: 2px solid transparent;
-            transition: border-color 0.2s ease;
-        }
-        
-        .main-nav a:hover {
-            color: #007bff;
-        }
-        
-        .nav-active {
-            border-bottom-color: #343a40;
-        }
-        
-        .about-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 80px 20px;
-        }
-        
-        .about-header {
-            text-align: center;
-            margin-bottom: 60px;
-        }
-        
-        .about-title {
-            font-size: 48px;
-            font-weight: 900;
-            margin-bottom: 20px;
-        }
-        
-        .about-subtitle {
-            font-size: 18px;
-            color: #6c757d;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .qr-section {
-            text-align: center;
-            padding: 40px 0;
-        }
-        
-        .qr-container {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            display: inline-block;
-            max-width: 400px;
-        }
-        
-        .qr-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #343a40;
-        }
-        
-        .qr-description {
-            color: #6c757d;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-        
-        .qr-image {
-            max-width: 300px;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .back-home {
-            text-align: center;
-            margin-top: 40px;
-        }
-        
-        .btn-home {
-            background-color: #343a40;
-            color: white;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: 500;
-        }
-        
-        .btn-home:hover {
-            background-color: black;
-            color: white;
-        }
+{% extends "base.html" %}
 
-        /* --- MOBILE RESPONSIVE STYLES --- */
-        @media (max-width: 768px) {
-            .navbar-container {
-                flex-direction: column;
-                padding: 0 15px;
-            }
-            
-            .logo {
-                font-size: 20px;
-                margin-bottom: 15px;
-                text-align: center;
-            }
-            
-            .main-nav {
-                margin-left: 0;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .main-nav a {
-                margin-right: 15px;
-                font-size: 13px;
-                padding: 5px 0;
-            }
-            
-            .about-container {
-                padding: 40px 15px;
-            }
-            
-            .about-title {
-                font-size: 36px;
-            }
-            
-            .about-subtitle {
-                font-size: 16px;
-                padding: 0 10px;
-            }
-            
-            .qr-container {
-                padding: 25px;
-                max-width: 90%;
-            }
-            
-            .qr-title {
-                font-size: 20px;
-            }
-            
-            .qr-description {
-                font-size: 14px;
-            }
-            
-            .qr-image {
-                max-width: 250px;
-            }
-            
-            .btn-home {
-                padding: 10px 25px;
-                font-size: 14px;
-            }
-        }
+{% block title %}About Me - K.{% endblock %}
 
-        /* --- SMALL MOBILE STYLES --- */
-        @media (max-width: 480px) {
-            .logo {
-                font-size: 18px;
-            }
-            
-            .main-nav {
-                gap: 8px;
-            }
-            
-            .main-nav a {
-                margin-right: 10px;
-                font-size: 12px;
-            }
-            
-            .about-title {
-                font-size: 32px;
-            }
-            
-            .qr-container {
-                padding: 20px;
-            }
-            
-            .qr-image {
-                max-width: 200px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <div class="navbar-container">
-            <div class="logo">Observe. Explore. Discover</div>
-            <div class="main-nav">
-                <a href="{{ url_for('index') }}">Home</a>
-                <a href="{{ url_for('about') }}" class="nav-active">About Me</a>
-                <a href="#projects">Portfolio</a>
-                <a href="#blog">My Blog</a>
-                <a href="#contact">Contact Me</a>
-            </div>
+{% block content %}
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="logo">Observe. Explore. Discover</div>
+        <div class="main-nav">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('about') }}" class="nav-active">About Me</a>
+            <a href="{{ url_for('index') }}#gallery">Portfolio</a>
+            <a href="{{ url_for('index') }}#ideas">My Blog</a>
+            <a href="{{ url_for('index') }}#about">Contact Me</a>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <div class="about-container">
-        <div class="about-header">
-            <h1 class="about-title">About Me</h1>
-            <p class="about-subtitle">
-                Get to know more about my journey, skills, and how to connect with me.
+<div class="about-container">
+    <div class="about-header">
+        <h1 class="about-title">About Me</h1>
+        <p class="about-subtitle">
+            Get to know more about my journey, skills, and how to connect with me.
+        </p>
+    </div>
+
+    <div class="qr-section">
+        <div class="qr-container">
+            <h3 class="qr-title">Connect With Me</h3>
+            <p class="qr-description">
+                Scan this QR code to quickly access my contact information, portfolio,
+                or connect with me on your preferred platform.
             </p>
-        </div>
-        
-        <div class="qr-section">
-            <div class="qr-container">
-                <h3 class="qr-title">Connect With Me</h3>
-                <p class="qr-description">
-                    Scan this QR code to quickly access my contact information, portfolio, 
-                    or connect with me on your preferred platform.
-                </p>
-                <div class="qr-image-container">
-                    <!-- Replace 'qr_code.png' with your actual QR code image filename -->
-                    <img src="{{ url_for('static', filename='personal_images/qr_code.JPG') }}" 
-                         alt="QR Code" 
-                         class="qr-image">
-                </div>
-                <p class="qr-description mt-3">
-                    Point your camera at the code to connect instantly!
-                </p>
+            <div class="qr-image-container">
+                <!-- Replace 'qr_code.png' with your actual QR code image filename -->
+                <img src="{{ url_for('static', filename='personal_images/qr_code.JPG') }}" alt="QR Code"
+                    class="qr-image">
             </div>
-        </div>
-        
-        <div class="back-home">
-            <a href="{{ url_for('index') }}" class="btn-home">← Back to Home</a>
+            <p class="qr-description mt-3">
+                Point your camera at the code to connect instantly!
+            </p>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+    <div class="back-home">
+        <a href="{{ url_for('index') }}" class="btn-home">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}

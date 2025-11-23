@@ -1,408 +1,42 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K.</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+{% extends "base.html" %}
 
-    <!-- Typed.js Library -->
-    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+{% block title %}K.{% endblock %}
 
-    <style>
-        /* Base Styles */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            color: #343a40;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
+{% block head %}
+<!-- Typed.js Library for animated text effects -->
+<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+{% endblock %}
 
-        /* --- DESKTOP GRID (Default) --- */
-        .maliko-grid {
-            display: grid;
-            grid-template-columns: 50px 1fr 1fr 50px; 
-            grid-template-rows: 50px auto 1fr;
-            min-height: 100vh; 
-            background: transparent;
-            padding: 0 10px;
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .maliko-grid > div:not(.content-area) {
-            border: 1px solid #e9ecef;
-            border-top: none;
-            border-bottom: none;
-        }
-        
-        /* Desktop Grid Areas */
-        .grid-header { grid-area: 1 / 1 / 2 / 5; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #e9ecef; background: #f8f9fa; z-index: 10; justify-content: space-between; }
-        .grid-left-sidebar { grid-area: 2 / 1 / 4 / 2; position: relative; }
-        .grid-right-sidebar { grid-area: 2 / 4 / 4 / 5; }
-        
-        .content-area { 
-            grid-area: 2 / 2 / 3 / 3; 
-            padding: 80px 40px; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            z-index: 5; 
-        }
-
-        .image-area { 
-            grid-area: 2 / 3 / 4 / 4; 
-            overflow: hidden; 
-            position: relative; 
-            background-color: #f8f9fa; 
-        }
-        
-        .footer-snippet { grid-area: 3 / 2 / 4 / 4; padding: 20px 40px; border-top: 1px solid #e9ecef; }
-
-        /* Navigation Styles - FIXED ALIGNMENT */
-        .logo { font-size: 24px; font-weight: 900; white-space: nowrap; }
-        .main-nav { display: flex; align-items: center; }
-        
-        .main-nav a { 
-            color: #343a40; 
-            text-decoration: none; 
-            font-weight: 500; 
-            margin-right: 25px; 
-            font-size: 14px;
-            white-space: nowrap;
-            
-            /* FIX: Add invisible border/padding to ALL links so they have the same height */
-            padding-bottom: 5px;
-            border-bottom: 2px solid transparent; 
-            transition: border-color 0.2s ease; /* Optional: makes the underline fade in/out smooth */
-        }
-        
-        .main-nav a:hover { color: #007bff; }
-        
-        /* Only change the color, layout remains identical */
-        .nav-active { 
-            border-bottom-color: #343a40; 
-        }
-
-        .nav-icons { display: flex; }
-
-        /* Left Sidebar Text */
-        .vertical-text {
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-            font-family: 'Roboto Mono', monospace;
-            font-size: 10px;
-            letter-spacing: 2px;
-            color: #ccc;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(180deg);
-        }
-
-        /* Content Styles */
-        .hero-title {
-            font-size: 68px;
-            font-weight: 900;
-            line-height: 1.1;
-            margin-bottom: 30px;
-            min-height: 160px;
-        }
-        .hero-title .name-part { font-size: 72px; }
-        .typed-cursor { font-size: 72px; color: #343a40; font-weight: 100; }
-        .hero-text {
-            font-size: 16px;
-            line-height: 1.6;
-            width: 80%;
-            margin-bottom: 30px;
-            color: #6c757d;
-        }
-        .btn-consult {
-            background-color: #343a40;
-            color: white;
-            padding: 12px 25px;
-            text-decoration: none;
-            font-weight: 500;
-            width: fit-content;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        /* Desktop Image Styles */
-        .image-area img {
-            height: 100%;
-            width: auto;
-            object-fit: cover;
-            position: absolute;
-            right: 0;
-            top: 0;
-            opacity: 0.9;
-        }
-
-        /* Section Styles */
-        .section {
-            padding: 80px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 900;
-            text-align: center;
-            margin-bottom: 50px;
-            color: #343a40;
-        }
-
-        /* Gallery Grid */
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .gallery-item {
-            position: relative;
-            overflow: hidden;
-            border-radius: 8px;
-            cursor: pointer;
-            background-color: #f8f9fa;
-            height: 300px;
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .gallery-item:hover img {
-            transform: scale(1.05);
-        }
-
-        .gallery-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-            color: white;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .gallery-item:hover .gallery-overlay {
-            opacity: 1;
-        }
-
-        .gallery-title {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .gallery-date {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        /* Placeholder Styles */
-        .placeholder-section {
-            text-align: center;
-            padding: 60px 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        .placeholder-icon {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .placeholder-text {
-            color: #6c757d;
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-        }
-
-        /* --- MOBILE RESPONSIVE (Max-width 991px) --- */
-        @media (max-width: 991px) {
-            .maliko-grid {
-                display: flex;
-                flex-direction: column;
-                min-height: 90vh;
-                padding: 0;
-                width: 100%;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .grid-left-sidebar, .grid-right-sidebar { display: none; }
-
-            /* Header Styles */
-            .grid-header {
-                flex-wrap: wrap; 
-                padding: 15px 20px;
-                justify-content: space-between;
-                height: auto;
-                background: rgba(248, 249, 250, 0.95); 
-                backdrop-filter: blur(5px); 
-                border-bottom: 1px solid #dee2e6;
-            }
-            
-            .logo { font-size: 20px; margin-bottom: 15px; width: 100%; text-align: center;}
-            
-            .main-nav { 
-                width: 100%; 
-                overflow-x: auto; 
-                padding-bottom: 5px;
-                -webkit-overflow-scrolling: touch;
-            }
-            .main-nav::-webkit-scrollbar { display: none; }
-            
-            .nav-icons { display: none; }
-
-            /* Content on top of background */
-            .content-area {
-                padding: 60px 25px;
-                width: 100%;
-                flex-grow: 1;
-                background: transparent; 
-            }
-
-            .hero-title {
-                font-size: 42px; 
-                min-height: auto;
-                margin-bottom: 20px;
-            }
-            .hero-title .name-part, .typed-cursor { font-size: 42px; }
-            
-            .hero-text { 
-                width: 100%; 
-                color: #212529; 
-                font-weight: 500;
-            }
-
-            /* Background Image Logic */
-            .image-area {
-                position: absolute; 
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 0; 
-                background: transparent;
-                pointer-events: none; 
-            }
-
-            .image-area img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-                object-position: center 20%; 
-                opacity: 0.15; 
-                filter: grayscale(100%) contrast(120%); 
-            }
-
-            /* Section Styles */
-            .section {
-                padding: 40px 0;
-            }
-
-            .section-title {
-                font-size: 2rem;
-                margin-bottom: 30px;
-            }
-
-            .gallery-grid {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-        .gallery-item {
-            height: 250px;
-        }
-    }
-
-    /* Back to Top Button */
-    .back-to-top {
-        position: fixed;
-        bottom: 30px;
-        right: 30px;
-        background-color: #343a40;
-        color: white;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        font-size: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 1000;
-        cursor: pointer;
-    }
-
-    .back-to-top:hover {
-        background-color: #495057;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-    }
-
-    .back-to-top.visible {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    /* Mobile responsive for back to top */
-    @media (max-width: 768px) {
-        .back-to-top {
-            bottom: 20px;
-            right: 20px;
-            width: 45px;
-            height: 45px;
-            font-size: 18px;
-        }
-    }
-    </style>
-</head>
-<body>
-
+{% block content %}
 <div class="maliko-grid">
-    
+
     <div class="grid-header">
         <div class="logo">Observe. Explore. Discover</div>
-        
+
         <div class="main-nav ms-auto">
             <a href="#gallery" class="nav-active">gallery</a>
             <a href="#humanity">humanity</a>
             <a href="#art">art</a>
             <a href="#ideas">ideas</a>
-            <a href="#about">about me</a>
+            <a href="{{ url_for('about') }}">about me</a>
         </div>
-        
+
         <div class="nav-icons ms-4">
+            <!-- Display user authentication status -->
             {% if current_user.is_authenticated %}
-                <span class="ms-3" style="font-size: 14px; font-weight: 500; color: #343a40; padding-bottom: 5px;">{{ current_user.username }}</span>
-                <a href="{{ url_for('logout') }}" class="ms-3" style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">logout</a>
+            <span class="ms-3" style="font-size: 14px; font-weight: 500; color: #343a40; padding-bottom: 5px;">{{
+                current_user.username }}</span>
+            <a href="{{ url_for('logout') }}" class="ms-3"
+                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">logout</a>
             {% else %}
-                <a href="{{ url_for('register') }}" class="ms-3" style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">register</a>
-                <a href="{{ url_for('login') }}" class="ms-3" style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">login</a>
+            <a href="{{ url_for('register') }}" class="ms-3"
+                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">register</a>
+            <a href="{{ url_for('login') }}" class="ms-3"
+                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">login</a>
             {% endif %}
         </div>
     </div>
-    
+
     <div class="grid-left-sidebar">
         <div class="vertical-text">recording life</div>
     </div>
@@ -412,17 +46,16 @@
             Hello World, <br>
             <span class="name-part" id="typed-text"></span>
         </h1>
-        
+
         <p class="hero-text">
-            Shall I compare thee to a summer's day? Thou art more lovely and more temperate: Rough winds do shake the darling buds of May, And summer's lease hath all too short a date
+            Shall I compare thee to a summer's day? Thou art more lovely and more temperate: Rough winds do shake the
+            darling buds of May, And summer's lease hath all too short a date
         </p>
         <a href="#" class="btn-consult">let's have a conversation</a>
     </div>
 
     <div class="image-area">
-        <img src="{{ url_for('static', filename='personal_images/my_photo.png') }}" 
-             alt="My photo" 
-             class="img-fluid"> 
+        <img src="{{ url_for('static', filename='personal_images/my_photo.png') }}" alt="My photo" class="img-fluid">
     </div>
 
     <div class="grid-right-sidebar"></div>
@@ -434,26 +67,27 @@
     <div class="container">
         <h2 class="section-title">📸 Gallery</h2>
         {% if recent_photos %}
-            <div class="gallery-grid">
-                {% for photo in recent_photos %}
-                <div class="gallery-item" onclick="openPhotoModal('{{ photo.filename }}', '{{ photo.title }}', '{{ photo.created_at.strftime('%b %d, %Y') }}')">
-                    <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
-                    <div class="gallery-overlay">
-                        <div class="gallery-title">{{ photo.title }}</div>
-                        <div class="gallery-date">{{ photo.created_at.strftime('%b %d, %Y') }}</div>
-                    </div>
+        <div class="gallery-grid">
+            {% for photo in recent_photos %}
+            <div class="gallery-item"
+                onclick="openPhotoModal('{{ photo.filename }}', '{{ photo.title }}', '{{ photo.created_at.strftime('%b %d, %Y') }}')">
+                <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
+                <div class="gallery-overlay">
+                    <div class="gallery-title">{{ photo.title }}</div>
+                    <div class="gallery-date">{{ photo.created_at.strftime('%b %d, %Y') }}</div>
                 </div>
-                {% endfor %}
             </div>
-            <div class="text-center mt-4">
-                <a href="{{ url_for('gallery') }}" class="btn btn-outline-dark">View All Photos →</a>
-            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('gallery') }}" class="btn btn-outline-dark">View All Photos →</a>
+        </div>
         {% else %}
-            <div class="placeholder-section">
-                <div class="placeholder-icon">📷</div>
-                <div class="placeholder-text">No photos yet. Start capturing moments!</div>
-                <a href="{{ url_for('gallery') }}" class="btn btn-dark">Upload Your First Photo</a>
-            </div>
+        <div class="placeholder-section">
+            <div class="placeholder-icon">📷</div>
+            <div class="placeholder-text">No photos yet. Start capturing moments!</div>
+            <a href="{{ url_for('gallery') }}" class="btn btn-dark">Upload Your First Photo</a>
+        </div>
         {% endif %}
     </div>
 </section>
@@ -464,8 +98,10 @@
         <h2 class="section-title">🌍 Humanity</h2>
         <div class="placeholder-section">
             <div class="placeholder-icon">👥</div>
-            <div class="placeholder-text">Exploring the human experience, connections, and stories that shape our world.</div>
-            <p class="text-muted">Coming soon - Stories of human resilience, cultural insights, and shared experiences.</p>
+            <div class="placeholder-text">Exploring the human experience, connections, and stories that shape our world.
+            </div>
+            <p class="text-muted">Coming soon - Stories of human resilience, cultural insights, and shared experiences.
+            </p>
         </div>
     </div>
 </section>
@@ -506,11 +142,6 @@
     </div>
 </section>
 
-<!-- Back to Top Button -->
-<a href="#" class="back-to-top" title="Back to Top">
-    ↑
-</a>
-
 <!-- Photo Modal -->
 <div id="photoModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -526,19 +157,20 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+{% block scripts %}
 <script>
+    // Initialize Typed.js for animated text effect
     var typed = new Typed('#typed-text', {
         strings: [
             'I am K<span class="maliko-dot">.</span>',
-            '<span style="color: #dc3545">格物.</span>',      
-            '<span style="color: #6f42c1">致知.</span>',  
-            '<span style="color: #0d6efd">Observation.</span>',  
-            '<span style="color: #198754">Exploration.</span>',  
+            '<span style="color: #dc3545">格物.</span>',
+            '<span style="color: #6f42c1">致知.</span>',
+            '<span style="color: #0d6efd">Observation.</span>',
+            '<span style="color: #198754">Exploration.</span>',
             '<span style="color: #fd7e14">Discovery.</span>'
-        
+
         ],
         typeSpeed: 50,
         backSpeed: 30,
@@ -558,25 +190,5 @@
         document.getElementById('modalPhotoDate').textContent = date;
         modal.show();
     }
-
-    // Back to Top Functionality
-    const backToTopButton = document.querySelector('.back-to-top');
-    
-    // Show/hide back to top button based on scroll position
-    window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
-            backToTopButton.classList.add('visible');
-        } else {
-            backToTopButton.classList.remove('visible');
-        }
-    });
-    
-    // Smooth scroll to top when clicked
-    backToTopButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    });
 </script>
+{% endblock %}
