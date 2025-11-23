@@ -1,94 +1,88 @@
-# MySite - Personal Portfolio Website
+# Personal Portfolio Website
 
-A Flask-based personal portfolio website with project showcase and about me page.
+A dynamic, responsive personal portfolio website built with Python and Flask. This application features a blog, photo gallery, and project showcase, all managed through a secure user authentication system.
 
-## 🚀 Quick Start
+## 🚀 Features
 
-### Method 1: Using the Run Script (Recommended)
-```bash
-# Install dependencies (if not already installed)
-pip install -r requirements.txt
+- **User Authentication**: Secure login and registration system using Flask-Login.
+- **Blog System**: Full CRUD (Create, Read, Update, Delete) functionality for blog posts.
+- **Photo Gallery**: 
+  - Image upload with automatic optimization (resizing and compression).
+  - Gallery view grouped by month.
+  - Lightbox modal for viewing photos.
+- **Project Showcase**: dedicated section to display portfolio projects.
+- **Responsive Design**: Built with Bootstrap 5 and custom CSS Grid, ensuring a great experience on mobile and desktop.
+- **Database**: SQLite database with SQLAlchemy ORM and Flask-Migrate for schema management.
 
-# Run the application
-python run.py
-```
+## 🛠️ Tech Stack
 
-### Method 2: Using Flask CLI
-```bash
-# Set Flask environment variable
-export FLASK_APP=mySite/app.py
+- **Backend**: Python 3, Flask
+- **Database**: SQLite, SQLAlchemy
+- **Frontend**: HTML5, CSS3, Bootstrap 5, Jinja2 Templates
+- **Image Processing**: Pillow (PIL)
 
-# Run the application
-flask run --port 8080
-```
+## 📦 Installation
 
-### Method 3: Direct Python Execution
-```bash
-# Run directly from the mySite directory
-python mySite/app.py
-```
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/kovzhu/mySite.git
+    cd mySite
+    ```
 
-## 📁 Project Structure
+2.  **Create a virtual environment**
+    ```bash
+    python3 -m venv .venv
+    source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+    ```
+
+3.  **Install dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4.  **Initialize the database**
+    ```bash
+    flask db init
+    flask db migrate -m "Initial migration"
+    flask db upgrade
+    ```
+
+## 🏃‍♂️ Usage
+
+1.  **Run the application**
+    ```bash
+    python3 run.py
+    ```
+
+2.  **Access the site**
+    Open your browser and navigate to `http://127.0.0.1:8080`.
+
+3.  **Create an Admin User**
+    - Go to `/register` to create your first account.
+    - By default, new users have the "user" role. You may need to manually update the database or use a script to promote a user to "admin" if you implement role-based access control.
+
+## 📂 Project Structure
 
 ```
 mySite/
-├── app.py                 # Main Flask application
-├── run.py                 # Easy run script
-├── requirements.txt       # Python dependencies
-├── static/               # Static files (CSS, images)
-│   ├── personal_images/  # Personal photos and QR codes
-│   └── project_images/   # Project screenshots
-├── templates/            # HTML templates
-│   ├── index.html        # Home page
-│   ├── about.html        # About Me page
-│   └── ...              # Other templates
-└── database.db          # SQLite database
+├── mySite/                 # Main application package
+│   ├── static/             # Static assets (CSS, images, JS)
+│   │   ├── css/            # Stylesheets
+│   │   ├── gallery_images/ # User uploaded photos
+│   │   └── ...
+│   ├── templates/          # Jinja2 HTML templates
+│   ├── app.py              # Application factory and routes
+│   └── ...
+├── migrations/             # Database migrations
+├── requirements.txt        # Python dependencies
+├── run.py                  # Entry point script
+└── README.md               # Project documentation
 ```
 
-## 🌐 Accessing Your Website
+## 🤝 Contributing
 
-Once running, open your browser to:
-- **Home Page**: http://127.0.0.1:8080
-- **About Me Page**: http://127.0.0.1:8080/about
+Feel free to fork this repository and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
 
-## 🔧 Features
+## 📄 License
 
-- ✅ Responsive design
-- ✅ Project portfolio showcase
-- ✅ About Me page with QR code
-- ✅ Image upload functionality
-- ✅ SQLite database integration
-- ✅ Bootstrap styling
-
-## 📝 Adding Your QR Code
-
-1. Place your QR code image in `static/personal_images/`
-2. Name it `qr_code.jpg` (or update the filename in `about.html`)
-3. The QR code will automatically display on the About Me page
-
-## 🛠️ Troubleshooting
-
-### Port Already in Use
-If you get "Address already in use" error:
-- Use a different port: `python run.py` (uses port 8080)
-- Or kill the process using the port: `lsof -ti:8080 | xargs kill -9`
-
-### Missing Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### Flask Command Not Found
-Make sure Flask is installed:
-```bash
-pip install flask
-```
-
-## 📞 Support
-
-If you encounter any issues:
-1. Check that all dependencies are installed
-2. Ensure you're in the correct directory
-3. Try using the `run.py` script (Method 1)
-
-Your website should now be running successfully! 🎉
+[MIT](https://choosealicense.com/licenses/mit/)

@@ -10,33 +10,6 @@
 {% block content %}
 <div class="maliko-grid">
 
-    <div class="grid-header">
-        <div class="logo">Observe. Explore. Discover</div>
-
-        <div class="main-nav ms-auto">
-            <a href="#gallery" class="nav-active">gallery</a>
-            <a href="#humanity">humanity</a>
-            <a href="#art">art</a>
-            <a href="#ideas">ideas</a>
-            <a href="{{ url_for('about') }}">about me</a>
-        </div>
-
-        <div class="nav-icons ms-4">
-            <!-- Display user authentication status -->
-            {% if current_user.is_authenticated %}
-            <span class="ms-3" style="font-size: 14px; font-weight: 500; color: #343a40; padding-bottom: 5px;">{{
-                current_user.username }}</span>
-            <a href="{{ url_for('logout') }}" class="ms-3"
-                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">logout</a>
-            {% else %}
-            <a href="{{ url_for('register') }}" class="ms-3"
-                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">register</a>
-            <a href="{{ url_for('login') }}" class="ms-3"
-                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">login</a>
-            {% endif %}
-        </div>
-    </div>
-
     <div class="grid-left-sidebar">
         <div class="vertical-text">recording life</div>
     </div>
