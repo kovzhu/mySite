@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>User Management</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span
+                            class="badge {% if user.role == 'admin' %}bg-danger{% elif user.role == 'member' %}bg-primary{% else %}bg-secondary{% endif %}">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td>
+                        <form action="{{ url_for('update_user_role', user_id=user.id) }}" method="POST"
+                            class="d-inline">
+                            <select name="role" class="form-select form-select-sm d-inline w-auto"
+                                onchange="this.form.submit()">
+                                <option value="admin" {% if user.role=='admin' %}selected{% endif %}>Admin</option>
+                                <option value="member" {% if user.role=='member' %}selected{% endif %}>Member</option>
+                                <option value="reader" {% if user.role=='reader' %}selected{% endif %}>Reader</option>
+                            </select>
+                        </form>
+                        {% if user.id != current_user.id %}
+                        <form action="{{ url_for('delete_user', user_id=user.id) }}" method="POST" class="d-inline"
+                            onsubmit="return confirm('Are you sure you want to delete this user?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

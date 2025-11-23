@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Messages</h2>
+    {% if messages %}
+    <div class="list-group">
+        {% for message in messages %}
+        <div class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ message.name }} ({{ message.email }})</h5>
+                <small>{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            <p class="mb-1">{{ message.content }}</p>
+            {% if message.user_id %}
+            <small>Registered User ID: {{ message.user_id }}</small>
+            {% else %}
+            <small>Guest User</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No messages found.</p>
+    {% endif %}
+</div>
+{% endblock %}

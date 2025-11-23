@@ -39,6 +39,8 @@ from werkzeug.utils import (
     secure_filename,
 )  # Make sure to import this for secure filenames
 from PIL import Image
+from functools import wraps
+
 
 # NOTE: For a real application, you would also initialize Flask-Login here
 # and use @login_required to protect the create, edit, and delete routes.
@@ -114,7 +116,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
-    role = db.Column(db.String(20), default="user")  # 'admin' or 'user'
+    role = db.Column(db.String(20), default="reader")  # 'admin', 'member', or 'reader'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
 
@@ -147,6 +149,54 @@ class User(UserMixin, db.Model):
             bool: True if user is admin, False otherwise
         """
         return self.role == "admin"
+
+    def is_member(self):
+        """
+        Check if the user has member privileges (can comment/like).
+        
+        Returns:
+            bool: True if user is member or admin, False otherwise
+        """
+        return self.role in ["admin", "member"]
+
+
+class Comment(db.Model):
+    """
+    Comment model for blog posts.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    
+    user = db.relationship('User', backref=db.backref('comments', lazy=True))
+
+
+class Like(db.Model):
+    """
+    Like model for blog posts.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    
+    user = db.relationship('User', backref=db.backref('likes', lazy=True))
+
+
+class Message(db.Model):
+    """
+    Message model for contact form submissions.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    
+    user = db.relationship('User', backref=db.backref('messages', lazy=True))
+
 
 
 class Project(db.Model):
@@ -187,6 +237,10 @@ class Post(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     media_filename = db.Column(db.String(255))
     media_type = db.Column(db.String(50))  # 'image', 'video', 'audio'
+    
+    comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")
+    likes = db.relationship('Like', backref='post', lazy=True, cascade="all, delete-orphan")
+
 
 
 class Photo(db.Model):
@@ -248,7 +302,7 @@ def register():
             return render_template("auth/register.html")
 
         # Create new user with username as email (for compatibility)
-        new_user = User(username=username, email=f"{username}@example.com")
+        new_user = User(username=username, email=f"{username}@example.com", role="reader")
         new_user.set_password(password)
 
         db.session.add(new_user)
@@ -306,7 +360,28 @@ def logout():
     return redirect(url_for("index"))
 
 
+# --- Decorators ---
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_admin():
+            abort(403)
+        return f(*args, **kwargs)
+    return decorated_function
+
+def member_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not current_user.is_member():
+            flash("You need to be a member to perform this action.", "error")
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 # --- Main Page Routes ---
+
 
 
 @app.route("/")
@@ -509,7 +584,130 @@ def delete(post_id):
     return redirect(url_for("blog_index"))
 
 
+# --- Comment & Like Routes ---
+
+@app.route("/posts/<int:post_id>/comment", methods=["POST"])
+@member_required
+def add_comment(post_id):
+    post = Post.query.get_or_404(post_id)
+    content = request.form.get("content")
+    
+    if not content:
+        flash("Comment cannot be empty.", "error")
+        return redirect(url_for("post", post_id=post_id))
+        
+    comment = Comment(content=content, user_id=current_user.id, post_id=post_id)
+    db.session.add(comment)
+    db.session.commit()
+    
+    flash("Comment added!", "success")
+    return redirect(url_for("post", post_id=post_id))
+
+@app.route("/comments/<int:comment_id>/delete", methods=["POST"])
+@login_required
+def delete_comment(comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    
+    # Allow deletion if user is admin or the comment author
+    if not current_user.is_admin() and current_user.id != comment.user_id:
+        abort(403)
+        
+    post_id = comment.post_id
+    db.session.delete(comment)
+    db.session.commit()
+    
+    flash("Comment deleted.", "info")
+    return redirect(url_for("post", post_id=post_id))
+
+@app.route("/posts/<int:post_id>/like", methods=["POST"])
+@member_required
+def like_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+    
+    if like:
+        db.session.delete(like)
+        db.session.commit()
+        flash("Unliked.", "info")
+    else:
+        like = Like(user_id=current_user.id, post_id=post_id)
+        db.session.add(like)
+        db.session.commit()
+        flash("Liked!", "success")
+        
+    return redirect(url_for("post", post_id=post_id))
+
+
+# --- Message Routes ---
+
+@app.route("/contact", methods=["GET", "POST"])
+def contact():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        content = request.form.get("content")
+        
+        if not name or not email or not content:
+            flash("All fields are required!", "error")
+            return render_template("contact.html")
+            
+        user_id = current_user.id if current_user.is_authenticated else None
+        
+        message = Message(name=name, email=email, content=content, user_id=user_id)
+        db.session.add(message)
+        db.session.commit()
+        
+        flash("Message sent! We will get back to you soon.", "success")
+        return redirect(url_for("contact"))
+        
+    return render_template("contact.html")
+
+
+# --- Admin Routes ---
+
+@app.route("/admin/users")
+@admin_required
+def admin_users():
+    users = User.query.all()
+    return render_template("admin/users.html", users=users)
+
+@app.route("/admin/users/<int:user_id>/update", methods=["POST"])
+@admin_required
+def update_user_role(user_id):
+    user = User.query.get_or_404(user_id)
+    new_role = request.form.get("role")
+    
+    if new_role in ["admin", "member", "reader"]:
+        user.role = new_role
+        db.session.commit()
+        flash(f"User {user.username} role updated to {new_role}.", "success")
+    else:
+        flash("Invalid role selected.", "error")
+        
+    return redirect(url_for("admin_users"))
+
+@app.route("/admin/users/<int:user_id>/delete", methods=["POST"])
+@admin_required
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash("You cannot delete yourself!", "error")
+        return redirect(url_for("admin_users"))
+        
+    db.session.delete(user)
+    db.session.commit()
+    flash(f"User {user.username} deleted.", "info")
+    return redirect(url_for("admin_users"))
+
+@app.route("/admin/messages")
+@admin_required
+def admin_messages():
+    messages = Message.query.order_by(Message.created_at.desc()).all()
+    return render_template("admin/messages.html", messages=messages)
+
+
 # --- Project Management Routes ---
+
 
 
 def allowed_file(filename):

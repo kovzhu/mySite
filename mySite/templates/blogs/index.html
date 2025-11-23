@@ -41,7 +41,8 @@
                         {{ post.created_at.strftime('%B %d, %Y') }}
                     </p>
                     <p class="card-text">
-                        {{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}
+                        {{ post.content|striptags|truncate(150) }}
+
                     </p>
                 </div>
             </div>

@@ -38,7 +38,14 @@
                 <a href="{{ url_for('index') }}#ideas">Ideas</a>
                 <a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}nav-active{% endif %}">About
                     Me</a>
+                <a href="{{ url_for('contact') }}"
+                    class="{% if request.endpoint == 'contact' %}nav-active{% endif %}">Contact</a>
+                {% if current_user.is_authenticated and current_user.is_admin() %}
+                <a href="{{ url_for('admin_users') }}"
+                    class="{% if 'admin' in request.endpoint %}nav-active{% endif %}">Admin</a>
+                {% endif %}
             </div>
+
 
             <div class="nav-icons ms-4">
                 <!-- Display user authentication status -->
