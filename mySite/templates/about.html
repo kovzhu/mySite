@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}About Me - K.{% endblock %}
+
+{% block content %}
+<nav class="navbar">
+    <div class="navbar-container">
+        <div class="logo">Observe. Explore. Discover</div>
+        <div class="main-nav">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('about') }}" class="nav-active">About Me</a>
+            <a href="{{ url_for('index') }}#gallery">Portfolio</a>
+            <a href="{{ url_for('index') }}#ideas">My Blog</a>
+            <a href="{{ url_for('index') }}#about">Contact Me</a>
+        </div>
+    </div>
+</nav>
+
+<div class="about-container">
+    <div class="about-header">
+        <h1 class="about-title">About Me</h1>
+        <p class="about-subtitle">
+            Get to know more about my journey, skills, and how to connect with me.
+        </p>
+    </div>
+
+    <div class="qr-section">
+        <div class="qr-container">
+            <h3 class="qr-title">Connect With Me</h3>
+            <p class="qr-description">
+                Scan this QR code to quickly access my contact information, portfolio,
+                or connect with me on your preferred platform.
+            </p>
+            <div class="qr-image-container">
+                <!-- Replace 'qr_code.png' with your actual QR code image filename -->
+                <img src="{{ url_for('static', filename='personal_images/qr_code.JPG') }}" alt="QR Code"
+                    class="qr-image">
+            </div>
+            <p class="qr-description mt-3">
+                Point your camera at the code to connect instantly!
+            </p>
+        </div>
+    </div>
+
+    <div class="back-home">
+        <a href="{{ url_for('index') }}" class="btn-home">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}

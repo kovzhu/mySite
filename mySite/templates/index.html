@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}K.{% endblock %}
+
+{% block head %}
+<!-- Typed.js Library for animated text effects -->
+<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="maliko-grid">
+
+    <div class="grid-header">
+        <div class="logo">Observe. Explore. Discover</div>
+
+        <div class="main-nav ms-auto">
+            <a href="#gallery" class="nav-active">gallery</a>
+            <a href="#humanity">humanity</a>
+            <a href="#art">art</a>
+            <a href="#ideas">ideas</a>
+            <a href="{{ url_for('about') }}">about me</a>
+        </div>
+
+        <div class="nav-icons ms-4">
+            <!-- Display user authentication status -->
+            {% if current_user.is_authenticated %}
+            <span class="ms-3" style="font-size: 14px; font-weight: 500; color: #343a40; padding-bottom: 5px;">{{
+                current_user.username }}</span>
+            <a href="{{ url_for('logout') }}" class="ms-3"
+                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">logout</a>
+            {% else %}
+            <a href="{{ url_for('register') }}" class="ms-3"
+                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">register</a>
+            <a href="{{ url_for('login') }}" class="ms-3"
+                style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid-left-sidebar">
+        <div class="vertical-text">recording life</div>
+    </div>
+
+    <div class="content-area">
+        <h1 class="hero-title">
+            Hello World, <br>
+            <span class="name-part" id="typed-text"></span>
+        </h1>
+
+        <p class="hero-text">
+            Shall I compare thee to a summer's day? Thou art more lovely and more temperate: Rough winds do shake the
+            darling buds of May, And summer's lease hath all too short a date
+        </p>
+        <a href="#" class="btn-consult">let's have a conversation</a>
+    </div>
+
+    <div class="image-area">
+        <img src="{{ url_for('static', filename='personal_images/my_photo.png') }}" alt="My photo" class="img-fluid">
+    </div>
+
+    <div class="grid-right-sidebar"></div>
+
+</div>
+
+<!-- Gallery Section -->
+<section id="gallery" class="section">
+    <div class="container">
+        <h2 class="section-title">📸 Gallery</h2>
+        {% if recent_photos %}
+        <div class="gallery-grid">
+            {% for photo in recent_photos %}
+            <div class="gallery-item"
+                onclick="openPhotoModal('{{ photo.filename }}', '{{ photo.title }}', '{{ photo.created_at.strftime('%b %d, %Y') }}')">
+                <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
+                <div class="gallery-overlay">
+                    <div class="gallery-title">{{ photo.title }}</div>
+                    <div class="gallery-date">{{ photo.created_at.strftime('%b %d, %Y') }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('gallery') }}" class="btn btn-outline-dark">View All Photos →</a>
+        </div>
+        {% else %}
+        <div class="placeholder-section">
+            <div class="placeholder-icon">📷</div>
+            <div class="placeholder-text">No photos yet. Start capturing moments!</div>
+            <a href="{{ url_for('gallery') }}" class="btn btn-dark">Upload Your First Photo</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Humanity Section -->
+<section id="humanity" class="section bg-light">
+    <div class="container">
+        <h2 class="section-title">🌍 Humanity</h2>
+        <div class="placeholder-section">
+            <div class="placeholder-icon">👥</div>
+            <div class="placeholder-text">Exploring the human experience, connections, and stories that shape our world.
+            </div>
+            <p class="text-muted">Coming soon - Stories of human resilience, cultural insights, and shared experiences.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- Art Section -->
+<section id="art" class="section">
+    <div class="container">
+        <h2 class="section-title">🎨 Art</h2>
+        <div class="placeholder-section">
+            <div class="placeholder-icon">🖼️</div>
+            <div class="placeholder-text">Creative expressions, visual narratives, and artistic explorations.</div>
+            <p class="text-muted">Coming soon - Digital art, traditional works, and creative experiments.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Ideas Section -->
+<section id="ideas" class="section bg-light">
+    <div class="container">
+        <h2 class="section-title">💡 Ideas</h2>
+        <div class="placeholder-section">
+            <div class="placeholder-icon">🧠</div>
+            <div class="placeholder-text">Thoughts, concepts, and innovations worth sharing.</div>
+            <p class="text-muted">Coming soon - Philosophical musings, technical insights, and creative concepts.</p>
+        </div>
+    </div>
+</section>
+
+<!-- About Me Section -->
+<section id="about" class="section">
+    <div class="container">
+        <h2 class="section-title">👤 About Me</h2>
+        <div class="placeholder-section">
+            <div class="placeholder-icon">🙋‍♂️</div>
+            <div class="placeholder-text">The story behind the observer, explorer, and discoverer.</div>
+            <p class="text-muted">Coming soon - Personal journey, values, and aspirations.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Photo Modal -->
+<div id="photoModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPhotoTitle">Photo Title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalPhotoImg" src="" alt="" class="img-fluid" style="max-height: 70vh; object-fit: contain;">
+                <div class="mt-3 text-muted" id="modalPhotoDate">Date</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Typed.js for animated text effect
+    var typed = new Typed('#typed-text', {
+        strings: [
+            'I am K<span class="maliko-dot">.</span>',
+            '<span style="color: #dc3545">格物.</span>',
+            '<span style="color: #6f42c1">致知.</span>',
+            '<span style="color: #0d6efd">Observation.</span>',
+            '<span style="color: #198754">Exploration.</span>',
+            '<span style="color: #fd7e14">Discovery.</span>'
+
+        ],
+        typeSpeed: 50,
+        backSpeed: 30,
+        backDelay: 1500,
+        startDelay: 500,
+        loop: true,
+        showCursor: true,
+        cursorChar: '|',
+        html: true
+    });
+
+    // Photo Modal Function
+    function openPhotoModal(filename, title, date) {
+        const modal = new bootstrap.Modal(document.getElementById('photoModal'));
+        document.getElementById('modalPhotoTitle').textContent = title;
+        document.getElementById('modalPhotoImg').src = "{{ url_for('static', filename='gallery_images/') }}" + filename;
+        document.getElementById('modalPhotoDate').textContent = date;
+        modal.show();
+    }
+</script>
+{% endblock %}
