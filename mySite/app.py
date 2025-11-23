@@ -21,6 +21,7 @@ from flask import (
     flash,
     abort,
     send_from_directory,
+    make_response,
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -798,18 +799,32 @@ os.makedirs(BLOG_UPLOAD_FOLDER, exist_ok=True)
 # Add static route for gallery images
 @app.route("/static/gallery_images/<path:filename>")
 def serve_gallery_images(filename):
-    """
-    Serve gallery images from the static directory.
+    return send_from_directory(app.config["PHOTO_UPLOAD_FOLDER"], filename)
 
-    Args:
-        filename (str): Name of the image file to serve
 
-    Returns:
-        File response with the requested image
+@app.route("/sitemap.xml")
+def sitemap():
     """
-    return send_from_directory(
-        os.path.join(app.root_path, "static", "gallery_images"), filename
-    )
+    Generate sitemap.xml dynamically.
+    """
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    template = render_template("sitemap.xml", posts=posts)
+    response = make_response(template)
+    response.headers["Content-Type"] = "application/xml"
+    return response
+
+
+@app.route("/robots.txt")
+def robots():
+    """
+    Generate robots.txt dynamically.
+    """
+    template = render_template("robots.txt")
+    response = make_response(template)
+    response.headers["Content-Type"] = "text/plain"
+    return response
+
+
 
 
 # --- Photo Gallery Routes ---

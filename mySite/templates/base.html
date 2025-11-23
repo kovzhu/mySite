@@ -6,14 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}K.{% endblock %}</title>
 
+    <!-- Standard SEO Meta Tags -->
+    <meta name="description"
+        content="{% block meta_description %}A personal portfolio and blog exploring humanity, art, and ideas.{% endblock %}">
+    <meta name="keywords"
+        content="{% block meta_keywords %}kunfeng, blog, photography, art, humanity, ideas, S&P Global, energy, 汝城, 佛学.{% endblock %}">
+    <meta name="author" content="Kunfeng">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ request.url }}">
+
+    <!-- Baidu Site Verification -->
+    <meta name="baidu-site-verification" content="code-placeholder" />
+
     <!-- Open Graph / WeChat Meta Tags -->
     <meta property="og:title" content="{% block meta_title %}K. - Observe. Explore. Discover{% endblock %}">
-    <meta property="og:description"
-        content="{% block meta_description %}A personal portfolio and blog exploring humanity, art, and ideas.{% endblock %}">
+    <meta property="og:description" content="{{ self.meta_description() }}">
     <meta property="og:image"
         content="{% block meta_image %}{{ url_for('static', filename='personal_images/my_photo.png', _external=True) }}{% endblock %}">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="K.">
     <link
         href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;700;900&display=swap"
         rel="stylesheet">
