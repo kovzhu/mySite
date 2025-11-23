@@ -5,6 +5,8 @@
 {% block head %}
 <!-- Typed.js Library for animated text effects -->
 <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+<!-- Text Rotation Script -->
+<script src="{{ url_for('static', filename='js/text_rotator.js') }}" defer></script>
 {% endblock %}
 
 {% block content %}
@@ -20,11 +22,11 @@
             <span class="name-part" id="typed-text"></span>
         </h1>
 
-        <p class="hero-text">
+        <p class="hero-text" id="hero-rotating-text">
             Shall I compare thee to a summer's day? Thou art more lovely and more temperate: Rough winds do shake the
             darling buds of May, And summer's lease hath all too short a date
         </p>
-        <a href="#" class="btn-consult">let's have a conversation</a>
+        <a href="{{ url_for('blog_index') }}" class="btn-consult">Explore what's in my brain</a>
     </div>
 
     <div class="image-area">
