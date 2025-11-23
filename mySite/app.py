@@ -49,11 +49,12 @@ from PIL import Image
 app = Flask(__name__)
 
 # Define upload folders for different content types
-UPLOAD_FOLDER = "static/project_images"  # Folder for project images
+# Use absolute paths to ensure folders are created in the correct location
+basedir = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(basedir, "static/project_images")
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}  # Allowed image file extensions
 
 # Configure database path using absolute path to avoid issues with instance folder
-basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
     basedir, "database.db"
 )
@@ -584,14 +585,14 @@ def add_project():
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # Add photo upload folder
-PHOTO_UPLOAD_FOLDER = "static/gallery_images"
+PHOTO_UPLOAD_FOLDER = os.path.join(basedir, "static/gallery_images")
 app.config["PHOTO_UPLOAD_FOLDER"] = PHOTO_UPLOAD_FOLDER
 
 # Create photo upload directory if it doesn't exist
 os.makedirs(PHOTO_UPLOAD_FOLDER, exist_ok=True)
 
 # Add blog media upload folder
-BLOG_UPLOAD_FOLDER = "static/blog_media"
+BLOG_UPLOAD_FOLDER = os.path.join(basedir, "static/blog_media")
 app.config["BLOG_UPLOAD_FOLDER"] = BLOG_UPLOAD_FOLDER
 os.makedirs(BLOG_UPLOAD_FOLDER, exist_ok=True)
 
