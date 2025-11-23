@@ -5,6 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}K.{% endblock %}</title>
+
+    <!-- Open Graph / WeChat Meta Tags -->
+    <meta property="og:title" content="{% block meta_title %}K. - Observe. Explore. Discover{% endblock %}">
+    <meta property="og:description"
+        content="{% block meta_description %}A personal portfolio and blog exploring humanity, art, and ideas.{% endblock %}">
+    <meta property="og:image"
+        content="{% block meta_image %}{{ url_for('static', filename='personal_images/my_photo.png', _external=True) }}{% endblock %}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:type" content="website">
     <link
         href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Inter:wght@400;700;900&display=swap"
         rel="stylesheet">
@@ -21,8 +30,10 @@
             <div class="main-nav">
                 <a href="{{ url_for('index') }}"
                     class="{% if request.endpoint == 'index' %}nav-active{% endif %}">Home</a>
-                <a href="{{ url_for('index') }}#gallery">Gallery</a>
-                <a href="{{ url_for('index') }}#humanity">Humanity</a>
+                <a href="{{ url_for('gallery') }}"
+                    class="{% if request.endpoint == 'gallery' %}nav-active{% endif %}">Gallery</a>
+                <a href="{{ url_for('blog_index') }}"
+                    class="{% if request.endpoint and ('blog' in request.endpoint or request.endpoint in ['post', 'create', 'edit']) %}nav-active{% endif %}">Humanity</a>
                 <a href="{{ url_for('index') }}#art">Art</a>
                 <a href="{{ url_for('index') }}#ideas">Ideas</a>
                 <a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}nav-active{% endif %}">About
@@ -35,12 +46,12 @@
                 <span class="ms-3" style="font-size: 14px; font-weight: 500; color: #343a40; padding-bottom: 5px;">{{
                     current_user.username }}</span>
                 <a href="{{ url_for('logout') }}" class="ms-3"
-                    style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">logout</a>
+                    style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">Logout</a>
                 {% else %}
                 <a href="{{ url_for('register') }}" class="ms-3"
-                    style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">register</a>
+                    style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">Register</a>
                 <a href="{{ url_for('login') }}" class="ms-3"
-                    style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">login</a>
+                    style="color: #343a40; text-decoration: none; font-weight: 500; font-size: 14px; padding-bottom: 5px;">Login</a>
                 {% endif %}
             </div>
         </div>

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Humanity - K.{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <h1 class="display-4">Humanity</h1>
+            <p class="lead text-muted">Thoughts, stories, and observations.</p>
+        </div>
+        <div class="col-auto">
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> New Post
+            </a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn btn-outline-primary">
+                Login to Manage
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        {% for post in posts %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 shadow-sm blog-card">
+                {% if post.media_type == 'image' %}
+                <img src="{{ url_for('static', filename='blog_media/' + post.media_filename) }}" class="card-img-top"
+                    alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="{{ url_for('post', post_id=post.id) }}"
+                            class="text-decoration-none text-dark stretched-link">
+                            {{ post.title }}
+                        </a>
+                    </h5>
+                    <p class="card-text text-muted small">
+                        {{ post.created_at.strftime('%B %d, %Y') }}
+                    </p>
+                    <p class="card-text">
+                        {{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted">No stories yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

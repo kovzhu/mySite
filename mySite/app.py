@@ -184,7 +184,8 @@ class Post(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    # media_path = db.Column(db.String(255)) # Uncomment if adding file uploads
+    media_filename = db.Column(db.String(255))
+    media_type = db.Column(db.String(50))  # 'image', 'video', 'audio'
 
 
 class Photo(db.Model):
@@ -317,9 +318,16 @@ def index():
     """
     # Get 6 most recent photos for the gallery section
     recent_photos = Photo.query.order_by(Photo.created_at.desc()).limit(6).all()
+    # Get 6 most recent blog posts for the humanity section
+    recent_posts = Post.query.order_by(Post.created_at.desc()).limit(6).all()
     projects = Project.query.order_by(Project.year.desc()).all()
 
-    return render_template("index.html", recent_photos=recent_photos, projects=projects)
+    return render_template(
+        "index.html",
+        recent_photos=recent_photos,
+        recent_posts=recent_posts,
+        projects=projects,
+    )
 
 
 @app.route("/about")
@@ -362,52 +370,78 @@ def gallery():
 # --- Blog Post Routes ---
 
 
+@app.route("/blogs")
+def blog_index():
+    """
+    Display all blog posts.
+    """
+    posts = Post.query.order_by(Post.created_at.desc()).all()
+    return render_template("blogs/index.html", posts=posts)
+
+
+def get_media_type(filename):
+    ext = filename.rsplit(".", 1)[1].lower()
+    if ext in {"jpg", "jpeg", "png", "gif"}:
+        return "image"
+    elif ext in {"mp4", "webm", "ogg"}:
+        return "video"
+    elif ext in {"mp3", "wav"}:
+        return "audio"
+    return None
+
+
 @app.route("/create", methods=["GET", "POST"])
 @login_required
 def create():
     """
     Create a new blog post.
-
-    GET: Display the post creation form
-    POST: Process the form and save new post to database
-
-    Returns:
-        Rendered template or redirect response
     """
     if request.method == "POST":
         title = request.form["title"]
         content = request.form["content"]
+        file = request.files.get("media")
 
         if not title or not content:
             flash("Title and Content are required!", "error")
-            # The 'preserve_context=True' keeps form data if validation fails
-            return render_template("create.html", title=title, content=content)
+            return render_template("blogs/create.html", title=title, content=content)
 
-        # Create a new Post object and commit to the database
-        new_post = Post(title=title, content=content)
+        media_filename = None
+        media_type = None
+
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+            media_type = get_media_type(filename)
+            if media_type:
+                file.save(os.path.join(app.config["BLOG_UPLOAD_FOLDER"], filename))
+                media_filename = filename
+            else:
+                flash("Unsupported file type!", "error")
+                return render_template(
+                    "blogs/create.html", title=title, content=content
+                )
+
+        new_post = Post(
+            title=title,
+            content=content,
+            media_filename=media_filename,
+            media_type=media_type,
+        )
         db.session.add(new_post)
         db.session.commit()
 
         flash("Post created successfully!", "success")
-        return redirect(url_for("index"))
+        return redirect(url_for("blog_index"))
 
-    return render_template("create.html")
+    return render_template("blogs/create.html")
 
 
 @app.route("/posts/<int:post_id>")
 def post(post_id):
     """
     Display a single blog post.
-
-    Args:
-        post_id (int): ID of the post to display
-
-    Returns:
-        Rendered post.html template with the requested post
     """
-    # Use get_or_404() which automatically throws a 404 if the post is not found
     post = Post.query.get_or_404(post_id)
-    return render_template("post.html", post=post)
+    return render_template("blogs/post.html", post=post)
 
 
 @app.route("/<int:post_id>/edit", methods=["GET", "POST"])
@@ -415,33 +449,43 @@ def post(post_id):
 def edit(post_id):
     """
     Edit an existing blog post.
-
-    GET: Display the post editing form
-    POST: Process the form and update the post in database
-
-    Args:
-        post_id (int): ID of the post to edit
-
-    Returns:
-        Rendered template or redirect response
     """
     post = Post.query.get_or_404(post_id)
 
     if request.method == "POST":
         post.title = request.form["title"]
         post.content = request.form["content"]
+        file = request.files.get("media")
 
         if not post.title or not post.content:
             flash("Title and Content are required!", "error")
-            return render_template("edit.html", post=post)
+            return render_template("blogs/edit.html", post=post)
 
-        # SQLAlchemy tracks changes automatically; just commit the session
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+            media_type = get_media_type(filename)
+            if media_type:
+                # Delete old file if exists
+                if post.media_filename:
+                    old_path = os.path.join(
+                        app.config["BLOG_UPLOAD_FOLDER"], post.media_filename
+                    )
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+
+                file.save(os.path.join(app.config["BLOG_UPLOAD_FOLDER"], filename))
+                post.media_filename = filename
+                post.media_type = media_type
+            else:
+                flash("Unsupported file type!", "error")
+                return render_template("blogs/edit.html", post=post)
+
         db.session.commit()
 
         flash("Post updated successfully!", "success")
         return redirect(url_for("post", post_id=post.id))
 
-    return render_template("edit.html", post=post)
+    return render_template("blogs/edit.html", post=post)
 
 
 @app.route("/<int:post_id>/delete", methods=["POST"])
@@ -449,21 +493,19 @@ def edit(post_id):
 def delete(post_id):
     """
     Delete a blog post.
-
-    Args:
-        post_id (int): ID of the post to delete
-
-    Returns:
-        Redirect to homepage with success message
     """
     post = Post.query.get_or_404(post_id)
 
-    # Delete the object from the session and commit
+    if post.media_filename:
+        file_path = os.path.join(app.config["BLOG_UPLOAD_FOLDER"], post.media_filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
     db.session.delete(post)
     db.session.commit()
 
     flash(f'Post "{post.title}" was successfully deleted.', "info")
-    return redirect(url_for("index"))
+    return redirect(url_for("blog_index"))
 
 
 # --- Project Management Routes ---
@@ -547,6 +589,11 @@ app.config["PHOTO_UPLOAD_FOLDER"] = PHOTO_UPLOAD_FOLDER
 
 # Create photo upload directory if it doesn't exist
 os.makedirs(PHOTO_UPLOAD_FOLDER, exist_ok=True)
+
+# Add blog media upload folder
+BLOG_UPLOAD_FOLDER = "static/blog_media"
+app.config["BLOG_UPLOAD_FOLDER"] = BLOG_UPLOAD_FOLDER
+os.makedirs(BLOG_UPLOAD_FOLDER, exist_ok=True)
 
 
 # Add static route for gallery images

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Create Post - K.{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Create New Post</h1>
+    <hr>
+
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('create') }}" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ title if title else '' }}"
+                required>
+        </div>
+        <div class="mb-3">
+            <label for="media" class="form-label">Media (Image, Video, Audio)</label>
+            <input type="file" class="form-control" id="media" name="media" accept="image/*,video/*,audio/*">
+            <div class="form-text">Supported formats: jpg, png, gif, mp4, mp3, wav</div>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">Content</label>
+            <textarea class="form-control" id="content" name="content" rows="8"
+                required>{{ content if content else '' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Publish Post</button>
+        <a href="{{ url_for('blog_index') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

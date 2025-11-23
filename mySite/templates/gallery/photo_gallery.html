@@ -1,705 +1,634 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Observations</title>
-    <style>
-        /* --- Global Variables (Light Theme) --- */
-        :root {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --accent-color: #000000;
-            --subtle-gray: #f4f4f4;
-            --gap-size: 15px;
-            --overlay-bg: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
-        }
+{% extends "base.html" %}
 
-        html {
-            scroll-behavior: smooth; /* Smooth scroll when clicking month links */
-        }
+{% block title %}Daily Observations - K.{% endblock %}
 
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+{% block head %}
+<style>
+    /* --- Global Variables (Light Theme) --- */
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --accent-color: #000000;
+        --subtle-gray: #f4f4f4;
+        --gap-size: 15px;
+        --overlay-bg: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    }
 
-        /* --- Navigation Header Styles --- */
-        .grid-header { 
-            display: flex; 
-            align-items: center; 
-            padding: 0 20px; 
-            border-bottom: 1px solid #e9ecef; 
-            background: #f8f9fa; 
-            z-index: 10; 
-            justify-content: space-between;
-        }
-        
-        .logo { 
-            font-size: 24px; 
-            font-weight: 900; 
-            white-space: nowrap; 
-        }
-        
-        .main-nav { 
-            display: flex; 
-            align-items: center; 
-        }
-        
-        .main-nav a { 
-            color: #343a40; 
-            text-decoration: none; 
-            font-weight: 500; 
-            margin-right: 25px; 
-            font-size: 14px;
-            white-space: nowrap;
-            
-            /* FIX: Add invisible border/padding to ALL links so they have the same height */
-            padding-bottom: 5px;
-            border-bottom: 2px solid transparent; 
-            transition: border-color 0.2s ease; /* Optional: makes the underline fade in/out smooth */
-        }
-        
-        .main-nav a:hover { 
-            color: #007bff; 
-        }
-        
-        /* Only change the color, layout remains identical */
-        .nav-active { 
-            border-bottom-color: #343a40; 
-        }
+    html {
+        scroll-behavior: smooth;
+        /* Smooth scroll when clicking month links */
+    }
 
-        .nav-icons { 
-            display: flex; 
-        }
+    /* --- Header & Nav --- */
+    .gallery-header {
+        padding: 60px 20px 20px;
+        text-align: center;
+    }
 
-        /* --- Header & Nav --- */
-        header {
-            padding: 60px 20px 20px;
-            text-align: center;
-        }
+    .gallery-header h1 {
+        font-weight: 700;
+        letter-spacing: -1px;
+        margin: 0 0 20px 0;
+        font-size: 2.5rem;
+        color: var(--accent-color);
+    }
 
-        header h1 {
-            font-weight: 700;
-            letter-spacing: -1px;
-            margin: 0 0 20px 0;
-            font-size: 2.5rem;
-            color: var(--accent-color);
+    .month-nav {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .month-nav a {
+        text-decoration: none;
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 20px;
+        background-color: var(--subtle-gray);
+        transition: all 0.2s ease;
+    }
+
+    .month-nav a:hover {
+        background-color: #333;
+        color: #fff;
+    }
+
+    /* --- Upload Form --- */
+    .upload-section {
+        max-width: 600px;
+        margin: 0 auto 40px;
+        padding: 20px;
+        background: var(--subtle-gray);
+        border-radius: 8px;
+        display: none;
+        /* Hidden by default */
+    }
+
+    .upload-section.show {
+        display: block;
+        /* Show when toggled */
+    }
+
+    .upload-toggle-btn {
+        background-color: #343a40;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+        margin: 0 auto 20px;
+        display: block;
+    }
+
+    .upload-toggle-btn:hover {
+        background-color: #495057;
+    }
+
+    .upload-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+
+    .upload-btn {
+        background-color: #343a40;
+        color: white;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+    }
+
+    .upload-btn:hover {
+        background-color: #495057;
+    }
+
+    /* --- Container --- */
+    .gallery-container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 0 20px 60px;
+    }
+
+    /* --- Month Section --- */
+    .month-section {
+        margin-bottom: 60px;
+        scroll-margin-top: 100px;
+        /* Offset for scrolling */
+    }
+
+    .month-header {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--subtle-gray);
+    }
+
+    /* --- The Grid --- */
+    .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-auto-rows: 350px;
+        gap: var(--gap-size);
+    }
+
+    /* --- Photo Card --- */
+    .photo-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 0px;
+        /* Sharper edges for clean look */
+        cursor: pointer;
+        background-color: var(--subtle-gray);
+    }
+
+    .photo-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+        display: block;
+    }
+
+    /* --- Hover Overlay --- */
+    .photo-info {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        background: var(--overlay-bg);
+        opacity: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        transition: opacity 0.3s ease;
+    }
+
+    .text-content {
+        color: white;
+    }
+
+    /* Hover State */
+    .photo-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .photo-card:hover .photo-info {
+        opacity: 1;
+    }
+
+    .photo-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .photo-date {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    /* --- Delete Button --- */
+    .delete-btn {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .delete-btn:hover {
+        background: white;
+        color: #dc3545;
+    }
+
+    /* --- Heart Button --- */
+    .heart-btn {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(5px);
+        border: none;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+
+    .heart-btn:hover {
+        background: white;
+        color: #ff4757;
+    }
+
+    .heart-btn.liked {
+        background: white;
+        color: #ff4757;
+    }
+
+    /* --- Modal (Single Page View) --- */
+    .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        z-index: 100;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #fff;
+        overflow-y: auto;
+    }
+
+    .modal-content-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .close-btn {
+        align-self: flex-end;
+        font-size: 2rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #333;
+    }
+
+    .modal-img {
+        width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        background-color: #f9f9f9;
+    }
+
+    .modal-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .modal-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .modal-date {
+        color: #888;
+        margin-top: 5px;
+    }
+
+    /* --- Flash Messages --- */
+    .flash-messages {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 0 20px;
+    }
+
+    .flash-message {
+        padding: 12px 16px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    .flash-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    .flash-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .flash-info {
+        background-color: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+    }
+
+    /* --- Mobile --- */
+    @media (max-width: 600px) {
+        .photo-grid {
+            grid-template-columns: 1fr;
+            grid-auto-rows: 300px;
+            gap: 10px;
         }
 
         .month-nav {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .month-nav a {
-            text-decoration: none;
-            color: #666;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 8px 16px;
-            border-radius: 20px;
-            background-color: var(--subtle-gray);
-            transition: all 0.2s ease;
+            padding: 6px 12px;
+            font-size: 0.8rem;
         }
 
-        .month-nav a:hover {
-            background-color: #333;
-            color: #fff;
+        /* Mobile Content Adjustments */
+        .gallery-header {
+            padding: 40px 15px 15px;
         }
 
-        /* --- Upload Form --- */
-        .upload-section {
-            max-width: 600px;
-            margin: 0 auto 40px;
-            padding: 20px;
-            background: var(--subtle-gray);
-            border-radius: 8px;
-            display: none; /* Hidden by default */
+        .gallery-header h1 {
+            font-size: 2rem;
+            margin-bottom: 15px;
         }
 
-        .upload-section.show {
-            display: block; /* Show when toggled */
+        .gallery-container {
+            padding: 0 15px 40px;
         }
 
-        .upload-toggle-btn {
-            background-color: #343a40;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-            margin: 0 auto 20px;
-            display: block;
-        }
-
-        .upload-toggle-btn:hover {
-            background-color: #495057;
-        }
-
-        .upload-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .form-group label {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .upload-btn {
-            background-color: #343a40;
-            color: white;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-        }
-
-        .upload-btn:hover {
-            background-color: #495057;
-        }
-
-        /* --- Container --- */
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 0 20px 60px;
-        }
-
-        /* --- Month Section --- */
         .month-section {
-            margin-bottom: 60px;
-            scroll-margin-top: 100px; /* Offset for scrolling */
+            margin-bottom: 40px;
         }
 
         .month-header {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--subtle-gray);
-        }
-
-        /* --- The Grid --- */
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            grid-auto-rows: 350px;
-            gap: var(--gap-size);
-        }
-
-        /* --- Photo Card --- */
-        .photo-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 0px; /* Sharper edges for clean look */
-            cursor: pointer;
-            background-color: var(--subtle-gray);
+            font-size: 1.3rem;
+            margin-bottom: 15px;
         }
 
         .photo-card img {
-            width: 100%;
             height: 100%;
-            object-fit: cover;
-            transition: transform 0.5s ease;
-            display: block;
-        }
-
-        /* --- Hover Overlay --- */
-        .photo-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
             width: 100%;
-            padding: 20px;
-            box-sizing: border-box;
-            background: var(--overlay-bg);
-            opacity: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            transition: opacity 0.3s ease;
         }
 
-        .text-content {
-            color: white;
-        }
-
-        /* Hover State */
-        .photo-card:hover img {
-            transform: scale(1.05);
-        }
-
-        .photo-card:hover .photo-info {
-            opacity: 1;
+        .photo-info {
+            padding: 15px;
         }
 
         .photo-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 4px;
+            font-size: 1rem;
         }
 
         .photo-date {
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.8);
+            font-size: 0.8rem;
         }
 
-        /* --- Delete Button --- */
+        .heart-btn,
         .delete-btn {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(5px);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
+            padding: 6px 10px;
+            font-size: 0.8rem;
         }
 
-        .delete-btn:hover {
-            background: white;
-            color: #dc3545;
+        .upload-section {
+            margin: 0 15px 30px;
+            padding: 15px;
         }
+    }
+</style>
+{% endblock %}
 
-        /* --- Heart Button --- */
-        .heart-btn {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(5px);
-            border: none;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
+{% block content %}
+<!-- Flash Messages -->
+<div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+</div>
 
-        .heart-btn:hover {
-            background: white;
-            color: #ff4757;
-        }
+<header class="gallery-header">
+    <h1>Daily observations.</h1>
 
-        .heart-btn.liked {
-            background: white;
-            color: #ff4757;
-        }
+    <!-- Upload Toggle Button -->
+    {% if current_user.is_authenticated %}
+    <button class="upload-toggle-btn" onclick="toggleUploadForm()">📷 Upload Photo</button>
 
-        /* --- Modal (Single Page View) --- */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #fff;
-            overflow-y: auto;
-        }
+    <!-- Upload Form -->
+    <div class="upload-section">
+        <h3 style="margin-bottom: 20px; text-align: center;">Upload New Photo</h3>
+        <form class="upload-form" action="{{ url_for('upload_photo') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">Photo Title</label>
+                <input type="text" id="title" name="title" placeholder="Optional - will use filename if empty">
+            </div>
 
-        .modal-content-wrapper {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+            </div>
 
-        .close-btn {
-            align-self: flex-end;
-            font-size: 2rem;
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: #333;
-        }
 
-        .modal-img {
-            width: 100%;
-            max-height: 80vh;
-            object-fit: contain;
-            background-color: #f9f9f9;
-        }
+            <div class="form-group">
+                <label for="photo">Photo File *</label>
+                <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.gif" required>
+            </div>
 
-        .modal-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-        }
-
-        .modal-title { font-size: 2rem; font-weight: 700; margin: 0; }
-        .modal-date { color: #888; margin-top: 5px; }
-
-        /* --- Flash Messages --- */
-        .flash-messages {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
-
-        .flash-message {
-            padding: 12px 16px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            font-weight: 500;
-        }
-
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .flash-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .flash-info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-
-        /* --- Mobile --- */
-        @media (max-width: 600px) {
-            .photo-grid {
-                grid-template-columns: 1fr;
-                grid-auto-rows: 300px;
-                gap: 10px;
-            }
-            .month-nav { gap: 8px; }
-            .month-nav a { padding: 6px 12px; font-size: 0.8rem; }
-            
-            /* Mobile Header Styles */
-            .grid-header {
-                flex-wrap: wrap; 
-                padding: 15px 20px;
-                justify-content: space-between;
-                height: auto;
-                background: rgba(248, 249, 250, 0.95); 
-                backdrop-filter: blur(5px); 
-                border-bottom: 1px solid #dee2e6;
-            }
-            
-            .logo { 
-                font-size: 20px; 
-                margin-bottom: 15px; 
-                width: 100%; 
-                text-align: center;
-            }
-            
-            .main-nav { 
-                width: 100%; 
-                overflow-x: auto; 
-                padding-bottom: 5px;
-                -webkit-overflow-scrolling: touch;
-            }
-            .main-nav::-webkit-scrollbar { display: none; }
-            
-            .nav-icons { display: none; }
-            
-            /* Mobile Content Adjustments */
-            header {
-                padding: 40px 15px 15px;
-            }
-            
-            header h1 {
-                font-size: 2rem;
-                margin-bottom: 15px;
-            }
-            
-            .container {
-                padding: 0 15px 40px;
-            }
-            
-            .month-section {
-                margin-bottom: 40px;
-            }
-            
-            .month-header {
-                font-size: 1.3rem;
-                margin-bottom: 15px;
-            }
-            
-            .photo-card img {
-                height: 100%;
-                width: 100%;
-            }
-            
-            .photo-info {
-                padding: 15px;
-            }
-            
-            .photo-title {
-                font-size: 1rem;
-            }
-            
-            .photo-date {
-                font-size: 0.8rem;
-            }
-            
-            .heart-btn, .delete-btn {
-                padding: 6px 10px;
-                font-size: 0.8rem;
-            }
-
-            .upload-section {
-                margin: 0 15px 30px;
-                padding: 15px;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Navigation Header -->
-    <div class="grid-header">
-        <div class="logo">Observe. Explore. Discover</div>
-        
-        <div class="main-nav ms-auto">
-            <a href="{{ url_for('index') }}">home</a>
-            <a href="{{ url_for('gallery') }}" class="nav-active">gallery</a>
-            <a href="{{ url_for('about') }}">humanity</a>
-            <a href="#blog">art</a>
-            <a href="#">ideas</a>
-            <a href="{{ url_for('about') }}">about me</a>
-        </div>
-        
-        <div class="nav-icons ms-4">
-            <span class="ms-3">🔍</span> 
-            <span class="ms-3">🛒</span> 
-            <span class="ms-3">👤</span>
-        </div>
+            <button type="submit" class="upload-btn">Upload Photo</button>
+        </form>
     </div>
+    {% endif %}
 
-    <!-- Flash Messages -->
-    <div class="flash-messages">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+    <!-- Navigation Links -->
+    <nav class="month-nav">
+        {% for month in photos_by_month.keys() %}
+        <a href="#{{ month }}">{{ month|replace('23', ' 2023')|replace('24', ' 2024')|title }}</a>
+        {% endfor %}
+    </nav>
+</header>
 
-    <header>
-        <h1>Daily observations.</h1>
-        
-        <!-- Upload Toggle Button -->
-        <button class="upload-toggle-btn" onclick="toggleUploadForm()">📷 Upload Photo</button>
-        
-        <!-- Upload Form -->
-        <div class="upload-section">
-            <h3 style="margin-bottom: 20px; text-align: center;">Upload New Photo</h3>
-            <form class="upload-form" action="{{ url_for('upload_photo') }}" method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="title">Photo Title</label>
-                    <input type="text" id="title" name="title" placeholder="Optional - will use filename if empty">
-                </div>
-                
-                <div class="form-group">
-                    <label for="description">Description</label>
-                    <textarea id="description" name="description" rows="3"></textarea>
-                </div>
-                
-                
-                <div class="form-group">
-                    <label for="photo">Photo File *</label>
-                    <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.gif" required>
-                </div>
-                
-                <button type="submit" class="upload-btn">Upload Photo</button>
-            </form>
-        </div>
-
-        <!-- Navigation Links -->
-        <nav class="month-nav">
-            {% for month in photos_by_month.keys() %}
-                <a href="#{{ month }}">{{ month|replace('23', ' 2023')|replace('24', ' 2024')|title }}</a>
-            {% endfor %}
-        </nav>
-    </header>
-
-    <div class="container">
-        {% if photos_by_month %}
-            {% for month, photos in photos_by_month.items() %}
-                <!-- Month Section -->
-                <div id="{{ month }}" class="month-section">
-                    <div class="month-header">{{ month|replace('23', ' 2023')|replace('24', ' 2024')|title }}</div>
-                    <div class="photo-grid">
-                        {% for photo in photos %}
-                            <!-- Photo Item -->
-                            <div class="photo-card" onclick="openModal(this)">
-                                <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
-                                <div class="photo-info">
-                                    <div class="text-content">
-                                        <div class="photo-title">{{ photo.title }}</div>
-                                        <div class="photo-date">{{ photo.created_at.strftime('%b %d, %Y') }}</div>
-                                    </div>
-                                    <div style="display: flex; gap: 8px;">
-                                        <!-- Heart Button -->
-                                        <button class="heart-btn" onclick="toggleHeart(event, this)">
-                                            <span>♥</span> <span class="count">0</span>
-                                        </button>
-                                        <!-- Delete Button -->
-                                        <form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this photo?')">
-                                            <button type="submit" class="delete-btn" onclick="event.stopPropagation()">
-                                                <span>🗑️</span> Delete
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
+<div class="gallery-container">
+    {% if photos_by_month %}
+    {% for month, photos in photos_by_month.items() %}
+    <!-- Month Section -->
+    <div id="{{ month }}" class="month-section">
+        <div class="month-header">{{ month|replace('23', ' 2023')|replace('24', ' 2024')|title }}</div>
+        <div class="photo-grid">
+            {% for photo in photos %}
+            <!-- Photo Item -->
+            <div class="photo-card" onclick="openModal(this)">
+                <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
+                <div class="photo-info">
+                    <div class="text-content">
+                        <div class="photo-title">{{ photo.title }}</div>
+                        <div class="photo-date">{{ photo.created_at.strftime('%b %d, %Y') }}</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <!-- Heart Button -->
+                        <button class="heart-btn" onclick="toggleHeart(event, this)">
+                            <span>♥</span> <span class="count">0</span>
+                        </button>
+                        <!-- Delete Button -->
+                        {% if current_user.is_authenticated %}
+                        <form action="{{ url_for('delete_photo', photo_id=photo.id) }}" method="POST"
+                            style="display: inline;"
+                            onsubmit="return confirm('Are you sure you want to delete this photo?')">
+                            <button type="submit" class="delete-btn" onclick="event.stopPropagation()">
+                                <span>🗑️</span> Delete
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
+            </div>
             {% endfor %}
-        {% else %}
-            <div style="text-align: center; padding: 60px 20px; color: #666;">
-                <h3>No photos yet</h3>
-                <p>Upload your first photo using the form above!</p>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- THE FULL PAGE MODAL TEMPLATE -->
-    <div id="photoModal" class="modal">
-        <div class="modal-content-wrapper">
-            <button class="close-btn" onclick="closeModal()">&times; Close</button>
-            <img id="modalImg" class="modal-img" src="" alt="">
-            <div class="modal-details">
-                <div>
-                    <h2 id="modalTitle" class="modal-title">Title</h2>
-                    <div id="modalDate" class="modal-date">Date</div>
-                </div>
-                <!-- We duplicate the like button for the detailed view -->
-                <button class="heart-btn" style="background:#f4f4f4; color:#333; font-size:1.1rem; padding: 12px 20px;">
-                    <span style="color:red">♥</span> Supported by <span id="modalCount" style="margin-left:5px; font-weight:bold;">0</span> people
-                </button>
-            </div>
-            <div style="max-width: 600px; color: #666; line-height: 1.6;">
-                <p>This is where you could add a longer description about the photo, camera settings (EXIF data), or the story behind the shot. Since this is a template, this text is just a placeholder.</p>
-            </div>
         </div>
     </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 60px 20px; color: #666;">
+        <h3>No photos yet</h3>
+        {% if current_user.is_authenticated %}
+        <p>Upload your first photo using the form above!</p>
+        {% else %}
+        <p>Login to upload photos.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
 
-    <script>
-        // --- Upload Form Toggle ---
-        function toggleUploadForm() {
-            const uploadSection = document.querySelector('.upload-section');
-            const toggleBtn = document.querySelector('.upload-toggle-btn');
-            
-            uploadSection.classList.toggle('show');
-            
-            // Update button text
-            if (uploadSection.classList.contains('show')) {
-                toggleBtn.textContent = '✖️ Cancel Upload';
-            } else {
-                toggleBtn.textContent = '📷 Upload Photo';
-            }
+<!-- THE FULL PAGE MODAL TEMPLATE -->
+<div id="photoModal" class="modal">
+    <div class="modal-content-wrapper">
+        <button class="close-btn" onclick="closeModal()">&times; Close</button>
+        <img id="modalImg" class="modal-img" src="" alt="">
+        <div class="modal-details">
+            <div>
+                <h2 id="modalTitle" class="modal-title">Title</h2>
+                <div id="modalDate" class="modal-date">Date</div>
+            </div>
+            <!-- We duplicate the like button for the detailed view -->
+            <button class="heart-btn" style="background:#f4f4f4; color:#333; font-size:1.1rem; padding: 12px 20px;">
+                <span style="color:red">♥</span> Supported by <span id="modalCount"
+                    style="margin-left:5px; font-weight:bold;">0</span> people
+            </button>
+        </div>
+        <div style="max-width: 600px; color: #666; line-height: 1.6;">
+            <p>This is where you could add a longer description about the photo, camera settings (EXIF data), or the
+                story behind the shot. Since this is a template, this text is just a placeholder.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // --- Upload Form Toggle ---
+    function toggleUploadForm() {
+        const uploadSection = document.querySelector('.upload-section');
+        const toggleBtn = document.querySelector('.upload-toggle-btn');
+
+        uploadSection.classList.toggle('show');
+
+        // Update button text
+        if (uploadSection.classList.contains('show')) {
+            toggleBtn.textContent = '✖️ Cancel Upload';
+        } else {
+            toggleBtn.textContent = '📷 Upload Photo';
+        }
+    }
+
+    // --- Logic for the Heart/Support Counter ---
+    function toggleHeart(event, btn) {
+        // Prevent the click from triggering the photo modal
+        event.stopPropagation();
+
+        const countSpan = btn.querySelector('.count');
+        let count = parseInt(countSpan.innerText);
+
+        if (btn.classList.contains('liked')) {
+            // Unlike
+            count--;
+            btn.classList.remove('liked');
+        } else {
+            // Like
+            count++;
+            btn.classList.add('liked');
         }
 
-        // --- Logic for the Heart/Support Counter ---
-        function toggleHeart(event, btn) {
-            // Prevent the click from triggering the photo modal
-            event.stopPropagation();
+        countSpan.innerText = count;
+    }
 
-            const countSpan = btn.querySelector('.count');
-            let count = parseInt(countSpan.innerText);
-            
-            if (btn.classList.contains('liked')) {
-                // Unlike
-                count--;
-                btn.classList.remove('liked');
-            } else {
-                // Like
-                count++;
-                btn.classList.add('liked');
-            }
-            
-            countSpan.innerText = count;
+    // --- Logic for the Full Page Modal ---
+    const modal = document.getElementById("photoModal");
+    const modalImg = document.getElementById("modalImg");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalDate = document.getElementById("modalDate");
+    const modalCount = document.getElementById("modalCount");
+
+    function openModal(card) {
+        // Get data from the clicked card
+        const img = card.querySelector('img');
+        const title = card.querySelector('.photo-title').innerText;
+        const date = card.querySelector('.photo-date').innerText;
+        const count = card.querySelector('.count').innerText;
+
+        // Populate modal
+        modalImg.src = img.src;
+        modalTitle.innerText = title;
+        modalDate.innerText = date;
+        modalCount.innerText = count;
+
+        // Show modal
+        modal.style.display = "block";
+        // Disable background scrolling
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+        modal.style.display = "none";
+        // Re-enable background scrolling
+        document.body.style.overflow = "auto";
+    }
+
+    // Close modal if clicking outside the image content
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            closeModal();
         }
-
-        // --- Logic for the Full Page Modal ---
-        const modal = document.getElementById("photoModal");
-        const modalImg = document.getElementById("modalImg");
-        const modalTitle = document.getElementById("modalTitle");
-        const modalDate = document.getElementById("modalDate");
-        const modalCount = document.getElementById("modalCount");
-
-        function openModal(card) {
-            // Get data from the clicked card
-            const img = card.querySelector('img');
-            const title = card.querySelector('.photo-title').innerText;
-            const date = card.querySelector('.photo-date').innerText;
-            const count = card.querySelector('.count').innerText;
-
-            // Populate modal
-            modalImg.src = img.src;
-            modalTitle.innerText = title;
-            modalDate.innerText = date;
-            modalCount.innerText = count;
-
-            // Show modal
-            modal.style.display = "block";
-            // Disable background scrolling
-            document.body.style.overflow = "hidden";
-        }
-
-        function closeModal() {
-            modal.style.display = "none";
-            // Re-enable background scrolling
-            document.body.style.overflow = "auto";
-        }
-
-        // Close modal if clicking outside the image content
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-    </script>
-</body>
-</html>
+    }
+</script>
+{% endblock %}

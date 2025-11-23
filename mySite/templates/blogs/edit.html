@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post - K.{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Edit Post</h1>
+    <hr>
+
+    {% with messages = get_flashed_messages(category_filter=["error"]) %}
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('edit', post_id=post.id) }}" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" class="form-control" id="title" name="title" value="{{ post.title }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="media" class="form-label">Media (Image, Video, Audio)</label>
+            {% if post.media_filename %}
+            <div class="mb-2">
+                <span class="text-muted">Current: {{ post.media_filename }}</span>
+            </div>
+            {% endif %}
+            <input type="file" class="form-control" id="media" name="media" accept="image/*,video/*,audio/*">
+            <div class="form-text">Supported formats: jpg, png, gif, mp4, mp3, wav. Uploading new media will replace the
+                current one.</div>
+        </div>
+        <div class="mb-3">
+            <label for="content" class="form-label">Content</label>
+            <textarea class="form-control" id="content" name="content" rows="8" required>{{ post.content }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update Post</button>
+        <a href="{{ url_for('post', post_id=post.id) }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

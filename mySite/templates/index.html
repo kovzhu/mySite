@@ -69,13 +69,45 @@
 <section id="humanity" class="section bg-light">
     <div class="container">
         <h2 class="section-title">🌍 Humanity</h2>
+        {% if recent_posts %}
+        <div class="row">
+            {% for post in recent_posts %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    {% if post.media_type == 'image' %}
+                    <img src="{{ url_for('static', filename='blog_media/' + post.media_filename) }}"
+                        class="card-img-top" alt="{{ post.title }}" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title h6">
+                            <a href="{{ url_for('post', post_id=post.id) }}"
+                                class="text-decoration-none text-dark stretched-link">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <p class="card-text text-muted small mb-2">
+                            {{ post.created_at.strftime('%B %d, %Y') }}
+                        </p>
+                        <p class="card-text small text-secondary">
+                            {{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('blog_index') }}" class="btn btn-outline-dark">Read More Stories →</a>
+        </div>
+        {% else %}
         <div class="placeholder-section">
             <div class="placeholder-icon">👥</div>
             <div class="placeholder-text">Exploring the human experience, connections, and stories that shape our world.
             </div>
-            <p class="text-muted">Coming soon - Stories of human resilience, cultural insights, and shared experiences.
-            </p>
+            <p class="text-muted">No stories yet. Be the first to share one!</p>
+            <a href="{{ url_for('blog_index') }}" class="btn btn-dark">Visit Blog</a>
         </div>
+        {% endif %}
     </div>
 </section>
 
