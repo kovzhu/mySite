@@ -1,6 +1,4 @@
-<!-- Text Rotation Script -->
-<script src="{{ url_for('static', filename='js/text_rotator.js') }}" defer></script>
-{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="maliko-grid">
@@ -206,6 +204,8 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+<script src="{{ url_for('static', filename='js/text_rotator.js') }}" defer></script>
 <script>
     // Initialize Typed.js for animated text effect
     var typed = new Typed('#typed-text', {
