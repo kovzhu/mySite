@@ -22,6 +22,21 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('blog_index') }}"
+                    class="btn btn-sm {{ 'btn-dark' if not current_label else 'btn-outline-dark' }}">All</a>
+                {% for label in labels %}
+                <a href="{{ url_for('blog_index', label=label.name) }}"
+                    class="btn btn-sm {{ 'btn-dark' if current_label == label.name else 'btn-outline-dark' }}">
+                    {{ label.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         {% for post in posts %}
         <div class="col-md-6 mb-4">

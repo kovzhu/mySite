@@ -27,13 +27,47 @@
             <div class="form-text">Supported formats: jpg, png, gif, mp4, mp3, wav</div>
         </div>
         <div class="mb-3">
+            <label for="labels" class="form-label">Labels (comma separated)</label>
+            <input type="text" class="form-control" id="labels" name="labels" value="{{ labels_str|default('') }}"
+                placeholder="e.g. Tech, Life, Travel">
+        </div>
+        <div class="mb-3">
             <label for="content" class="form-label">Content</label>
-            <textarea class="form-control" id="content" name="content" rows="8"
-                required>{{ content if content else '' }}</textarea>
+            <textarea class="form-control" id="content" name="content"
+                rows="8">{{ content if content else '' }}</textarea>
         </div>
 
         <button type="submit" class="btn btn-success">Publish Post</button>
         <a href="{{ url_for('blog_index') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js"></script>
+<script>
+    tinymce.init({
+        selector: '#content',
+        plugins: 'preview importcss searchreplace autolink autosave save directionality code visualblocks visualchars fullscreen image link media codesample table charmap pagebreak nonbreaking anchor insertdatetime advlist lists wordcount help charmap quickbars emoticons',
+        toolbar: 'undo redo | bold italic underline strikethrough | fontfamily fontsize blocks | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | forecolor backcolor removeformat | charmap emoticons | fullscreen preview code | insertfile image media link anchor codesample',
+        toolbar_sticky: true,
+        autosave_ask_before_unload: true,
+        autosave_interval: '30s',
+        autosave_prefix: '{path}{query}-{id}-',
+        autosave_restore_when_empty: false,
+        autosave_retention: '2m',
+        image_advtab: true,
+        images_upload_url: '{{ url_for("upload_image") }}',
+        automatic_uploads: true,
+        height: 600,
+        image_caption: true,
+        quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote',
+        noneditable_class: 'mceNonEditable',
+        toolbar_mode: 'sliding',
+        contextmenu: 'link image table',
+        content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:16px }',
+        menubar: 'file edit view insert format tools table help',
+        link_default_target: '_blank'
+    });
+</script>
 {% endblock %}

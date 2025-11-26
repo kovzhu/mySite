@@ -47,7 +47,7 @@
             {% endif %}
 
             <div class="blog-content">
-                {{ post.content | replace('\n', '<br>') | safe }}
+                {{ post.content | safe }}
             </div>
 
             <!-- Likes Section -->

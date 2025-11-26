@@ -22,6 +22,7 @@ from flask import (
     abort,
     send_from_directory,
     make_response,
+    jsonify,
 )
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -221,6 +222,22 @@ class Project(db.Model):
     image_filename = db.Column(db.String(255))
 
 
+post_labels = db.Table('post_labels',
+    db.Column('post_id', db.Integer, db.ForeignKey('post.id'), primary_key=True),
+    db.Column('label_id', db.Integer, db.ForeignKey('label.id'), primary_key=True)
+)
+
+class Label(db.Model):
+    """
+    Label model for tagging blog posts.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+    def __repr__(self):
+        return f'<Label {self.name}>'
+
+
 class Post(db.Model):
     """
     Post model representing blog posts.
@@ -241,6 +258,8 @@ class Post(db.Model):
     
     comments = db.relationship('Comment', backref='post', lazy=True, cascade="all, delete-orphan")
     likes = db.relationship('Like', backref='post', lazy=True, cascade="all, delete-orphan")
+    labels = db.relationship('Label', secondary=post_labels, lazy='subquery',
+        backref=db.backref('posts', lazy=True))
 
 
 
@@ -452,8 +471,19 @@ def blog_index():
     """
     Display all blog posts.
     """
-    posts = Post.query.order_by(Post.created_at.desc()).all()
-    return render_template("blogs/index.html", posts=posts)
+    label_name = request.args.get('label')
+    if label_name:
+        label = Label.query.filter_by(name=label_name).first()
+        if label:
+            # Sort posts by date descending
+            posts = sorted(label.posts, key=lambda x: x.created_at, reverse=True)
+        else:
+            posts = []
+    else:
+        posts = Post.query.order_by(Post.created_at.desc()).all()
+    
+    all_labels = Label.query.order_by(Label.name).all()
+    return render_template("blogs/index.html", posts=posts, labels=all_labels, current_label=label_name)
 
 
 def get_media_type(filename):
@@ -476,11 +506,12 @@ def create():
     if request.method == "POST":
         title = request.form["title"]
         content = request.form["content"]
+        labels_str = request.form.get("labels", "")
         file = request.files.get("media")
 
         if not title or not content:
             flash("Title and Content are required!", "error")
-            return render_template("blogs/create.html", title=title, content=content)
+            return render_template("blogs/create.html", title=title, content=content, labels_str=labels_str)
 
         media_filename = None
         media_type = None
@@ -494,14 +525,26 @@ def create():
             else:
                 flash("Unsupported file type!", "error")
                 return render_template(
-                    "blogs/create.html", title=title, content=content
+                    "blogs/create.html", title=title, content=content, labels_str=labels_str
                 )
+        
+        # Process labels
+        post_labels = []
+        if labels_str:
+            label_names = [l.strip() for l in labels_str.split(',') if l.strip()]
+            for name in label_names:
+                label = Label.query.filter_by(name=name).first()
+                if not label:
+                    label = Label(name=name)
+                    db.session.add(label)
+                post_labels.append(label)
 
         new_post = Post(
             title=title,
             content=content,
             media_filename=media_filename,
             media_type=media_type,
+            labels=post_labels
         )
         db.session.add(new_post)
         db.session.commit()
@@ -532,6 +575,7 @@ def edit(post_id):
     if request.method == "POST":
         post.title = request.form["title"]
         post.content = request.form["content"]
+        labels_str = request.form.get("labels", "")
         file = request.files.get("media")
 
         if not post.title or not post.content:
@@ -556,6 +600,17 @@ def edit(post_id):
             else:
                 flash("Unsupported file type!", "error")
                 return render_template("blogs/edit.html", post=post)
+        
+        # Process labels
+        post.labels = [] # Clear existing labels
+        if labels_str:
+            label_names = [l.strip() for l in labels_str.split(',') if l.strip()]
+            for name in label_names:
+                label = Label.query.filter_by(name=name).first()
+                if not label:
+                    label = Label(name=name)
+                    db.session.add(label)
+                post.labels.append(label)
 
         db.session.commit()
 
@@ -583,6 +638,26 @@ def delete(post_id):
 
     flash(f'Post "{post.title}" was successfully deleted.', "info")
     return redirect(url_for("blog_index"))
+
+
+@app.route("/upload_image", methods=["POST"])
+@login_required
+def upload_image():
+    """
+    Handle image uploads from TinyMCE editor.
+    """
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file:
+        filename = secure_filename(file.filename)
+        # Ensure unique filename to prevent overwrites?
+        # For now, just save it. TinyMCE handles the upload.
+        file.save(os.path.join(app.config["BLOG_UPLOAD_FOLDER"], filename))
+        return jsonify({'location': url_for('static', filename='blog_media/' + filename)})
+    return jsonify({'error': 'Upload failed'}), 500
 
 
 # --- Comment & Like Routes ---
