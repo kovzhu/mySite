@@ -548,7 +548,8 @@
         {% for photo in pagination.items %}
         <!-- Photo Item -->
         <div class="photo-card" onclick="openModal(this)"
-            data-full-image="{{ url_for('static', filename='gallery_images/' + photo.filename) }}">
+            data-full-image="{{ url_for('static', filename='gallery_images/' + photo.filename) }}"
+            data-description="{{ photo.description if photo.description else '' }}">
             {% set thumbnail_path = 'gallery_images/thumbnails/' + photo.filename %}
             <img src="{{ url_for('static', filename=thumbnail_path) }}" alt="{{ photo.title }}" loading="lazy">
             <div class="photo-info">
@@ -627,9 +628,8 @@
                     style="margin-left:5px; font-weight:bold;">0</span> people
             </button>
         </div>
-        <div style="max-width: 600px; color: #666; line-height: 1.6;">
-            <p>This is where you could add a longer description about the photo, camera settings (EXIF data), or the
-                story behind the shot. Since this is a template, this text is just a placeholder.</p>
+        <div id="modalDescription" style="max-width: 600px; color: #666; line-height: 1.6; display: none;">
+            <p id="modalDescriptionText"></p>
         </div>
     </div>
 </div>
@@ -708,12 +708,23 @@
         const title = card.querySelector('.photo-title').innerText;
         const date = card.querySelector('.photo-date').innerText;
         const count = card.querySelector('.count').innerText;
+        const description = card.getAttribute('data-description');
 
         // Populate modal
         modalImg.src = fullImageSrc;
         modalTitle.innerText = title;
         modalDate.innerText = date;
         modalCount.innerText = count;
+
+        // Show description only if it exists
+        const modalDescription = document.getElementById('modalDescription');
+        const modalDescriptionText = document.getElementById('modalDescriptionText');
+        if (description && description.trim() !== '') {
+            modalDescriptionText.innerText = description;
+            modalDescription.style.display = 'block';
+        } else {
+            modalDescription.style.display = 'none';
+        }
     }
 
     function navigatePhoto(direction) {
