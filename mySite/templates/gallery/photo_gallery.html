@@ -491,8 +491,10 @@
     <div class="photo-grid">
         {% for photo in pagination.items %}
         <!-- Photo Item -->
-        <div class="photo-card" onclick="openModal(this)">
-            <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
+        <div class="photo-card" onclick="openModal(this)"
+            data-full-image="{{ url_for('static', filename='gallery_images/' + photo.filename) }}">
+            {% set thumbnail_path = 'gallery_images/thumbnails/' + photo.filename %}
+            <img src="{{ url_for('static', filename=thumbnail_path) }}" alt="{{ photo.title }}" loading="lazy">
             <div class="photo-info">
                 <div class="text-content">
                     <div class="photo-title">{{ photo.title }}</div>
@@ -619,13 +621,13 @@
 
     function openModal(card) {
         // Get data from the clicked card
-        const img = card.querySelector('img');
+        const fullImageSrc = card.getAttribute('data-full-image');
         const title = card.querySelector('.photo-title').innerText;
         const date = card.querySelector('.photo-date').innerText;
         const count = card.querySelector('.count').innerText;
 
         // Populate modal
-        modalImg.src = img.src;
+        modalImg.src = fullImageSrc;
         modalTitle.innerText = title;
         modalDate.innerText = date;
         modalCount.innerText = count;

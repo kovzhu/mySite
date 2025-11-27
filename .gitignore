@@ -43,6 +43,8 @@ instance/
 
 # the photos
 mySite/static/gallery_images
+# Exclude thumbnails
+mySite/static/gallery_images/thumbnails
 
 # Zip files
 *.zip

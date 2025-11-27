@@ -1006,6 +1006,20 @@ def upload_photo():
                     # Image is already small enough, just optimize
                     img.save(file_path, "JPEG", quality=85, optimize=True)
                     flash("Photo uploaded successfully!", "success")
+            
+            # Generate Thumbnail
+            with Image.open(file_path) as img:
+                if img.mode in ("RGBA", "LA", "P"):
+                    img = img.convert("RGB")
+                
+                # Create thumbnail directory
+                thumb_year_dir = os.path.join(app.config["PHOTO_UPLOAD_FOLDER"], "thumbnails", str(current_year))
+                os.makedirs(thumb_year_dir, exist_ok=True)
+                
+                thumb_path = os.path.join(thumb_year_dir, filename)
+                
+                img.thumbnail((400, 400))
+                img.save(thumb_path, "JPEG", quality=80, optimize=True)
 
         except Exception as e:
             flash(f"Error processing image: {str(e)}", "error")
