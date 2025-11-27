@@ -62,12 +62,10 @@
                     class="{% if request.endpoint == 'gallery' %}nav-active{% endif %}">Gallery</a>
                 <a href="{{ url_for('blog_index') }}"
                     class="{% if request.endpoint and ('blog' in request.endpoint or request.endpoint in ['post', 'create', 'edit']) %}nav-active{% endif %}">Humanity</a>
-                <a href="{{ url_for('index') }}#art">Art</a>
-                <a href="{{ url_for('index') }}#ideas">Ideas</a>
+                <a href="{{ url_for('index') }}#art">Ideas</a>
+                <a href="{{ url_for('index') }}#ideas">Lab</a>
                 <a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}nav-active{% endif %}">About
                     Me</a>
-                <a href="{{ url_for('contact') }}"
-                    class="{% if request.endpoint == 'contact' %}nav-active{% endif %}">Contact</a>
                 {% if current_user.is_authenticated and current_user.is_admin() %}
                 <a href="{{ url_for('admin_users') }}"
                     class="{% if 'admin' in request.endpoint %}nav-active{% endif %}">Admin</a>

@@ -2,6 +2,15 @@
 
 {% block content %}
 <div class="container mt-5">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('admin_users') }}">Users</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('admin_messages') }}">Messages</a>
+        </li>
+    </ul>
+
     <h2>Messages</h2>
     {% if messages %}
     <div class="list-group">
