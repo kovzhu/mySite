@@ -2,6 +2,16 @@
 
 {% block title %}Humanity - K.{% endblock %}
 
+{% block meta_title %}Humanity - K.{% endblock %}
+{% block meta_description %}Explore thoughts, stories, and observations on humanity by K.{% endblock %}
+{% block meta_image %}
+{% if posts and posts[0].media_type == 'image' %}
+{{ url_for('static', filename='blog_media/' + posts[0].media_filename, _external=True) }}
+{% else %}
+{{ super() }}
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <div class="row mb-4 align-items-center">

@@ -2,6 +2,16 @@
 
 {% block title %}Daily Observations - K.{% endblock %}
 
+{% block meta_title %}Daily Observations - Gallery{% endblock %}
+{% block meta_description %}Explore a collection of daily observations and moments captured by K.{% endblock %}
+{% block meta_image %}
+{% if pagination.items %}
+{{ url_for('static', filename='gallery_images/' + pagination.items[0].filename, _external=True) }}
+{% else %}
+{{ super() }}
+{% endif %}
+{% endblock %}
+
 {% block head %}
 <style>
     /* --- Global Variables (Light Theme) --- */
@@ -482,6 +492,26 @@
         }
     }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  "name": "Daily Observations - K.",
+  "description": "A collection of daily observations and moments captured by K.",
+  "image": [
+    {% for photo in pagination.items %}
+    {
+      "@type": "ImageObject",
+      "contentUrl": "{{ url_for('static', filename='gallery_images/' + photo.filename, _external=True) }}",
+      "thumbnailUrl": "{{ url_for('static', filename='gallery_images/thumbnails/' + photo.filename, _external=True) }}",
+      "name": "{{ photo.title }}",
+      "description": "{{ photo.description if photo.description else photo.title }}",
+      "uploadDate": "{{ photo.created_at.isoformat() }}"
+    }{{ "," if not loop.last }}
+    {% endfor %}
+  ]
+}
+</script>
 {% endblock %}
 
 {% block content %}

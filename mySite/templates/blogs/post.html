@@ -3,13 +3,37 @@
 {% block title %}{{ post.title }} - K.{% endblock %}
 
 {% block meta_title %}{{ post.title }} - K.{% endblock %}
-{% block meta_description %}{{ post.content[:150] }}{% endblock %}
+{% block meta_description %}{{ post.content|striptags|truncate(150) }}{% endblock %}
 {% block meta_image %}
 {% if post.media_filename and post.media_type == 'image' %}
 {{ url_for('static', filename='blog_media/' + post.media_filename, _external=True) }}
 {% else %}
 {{ super() }}
 {% endif %}
+{% endblock %}
+
+{% block head %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "{{ post.title }}",
+  "image": [
+    {% if post.media_filename and post.media_type == 'image' %}
+    "{{ url_for('static', filename='blog_media/' + post.media_filename, _external=True) }}"
+    {% else %}
+    "{{ url_for('static', filename='personal_images/my_photo.png', _external=True) }}"
+    {% endif %}
+   ],
+  "datePublished": "{{ post.created_at.isoformat() }}",
+  "dateModified": "{{ post.created_at.isoformat() }}",
+  "author": {
+    "@type": "Person",
+    "name": "K."
+  },
+  "description": "{{ post.content|striptags|truncate(150) }}"
+}
+</script>
 {% endblock %}
 
 {% block content %}
