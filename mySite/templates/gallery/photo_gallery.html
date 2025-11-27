@@ -158,8 +158,8 @@
     /* --- The Grid --- */
     .photo-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        grid-auto-rows: 350px;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-auto-rows: 250px;
         gap: var(--gap-size);
     }
 
@@ -273,7 +273,7 @@
         display: none;
         /* Hidden by default */
         position: fixed;
-        z-index: 100;
+        z-index: 9999;
         left: 0;
         top: 0;
         width: 100%;
@@ -292,12 +292,68 @@
     }
 
     .close-btn {
-        align-self: flex-end;
-        font-size: 2rem;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        font-size: 1rem;
         cursor: pointer;
-        background: none;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
         border: none;
-        color: #333;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-weight: bold;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .close-btn:hover {
+        background: rgba(0, 0, 0, 1);
+        transform: scale(1.1);
+    }
+
+    /* --- Navigation Buttons --- */
+    .nav-btn {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .nav-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .nav-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    .nav-btn-prev {
+        left: 20px;
+    }
+
+    .nav-btn-next {
+        right: 20px;
     }
 
     .modal-img {
@@ -553,7 +609,12 @@
 <!-- THE FULL PAGE MODAL TEMPLATE -->
 <div id="photoModal" class="modal">
     <div class="modal-content-wrapper">
-        <button class="close-btn" onclick="closeModal()">&times; Close</button>
+        <button class="close-btn" onclick="closeModal()" title="Close">&times;</button>
+
+        <!-- Navigation Buttons -->
+        <button class="nav-btn nav-btn-prev" id="prevBtn" onclick="navigatePhoto(-1)" title="Previous">&lsaquo;</button>
+        <button class="nav-btn nav-btn-next" id="nextBtn" onclick="navigatePhoto(1)" title="Next">&rsaquo;</button>
+
         <img id="modalImg" class="modal-img" src="" alt="">
         <div class="modal-details">
             <div>
@@ -618,9 +679,31 @@
     const modalTitle = document.getElementById("modalTitle");
     const modalDate = document.getElementById("modalDate");
     const modalCount = document.getElementById("modalCount");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+
+    let currentPhotoIndex = 0;
+    let allPhotoCards = [];
 
     function openModal(card) {
-        // Get data from the clicked card
+        // Get all photo cards for navigation
+        allPhotoCards = Array.from(document.querySelectorAll('.photo-card'));
+        currentPhotoIndex = allPhotoCards.indexOf(card);
+
+        // Load the photo
+        loadPhotoAtIndex(currentPhotoIndex);
+
+        // Show modal
+        modal.style.display = "block";
+        // Disable background scrolling
+        document.body.style.overflow = "hidden";
+
+        // Update navigation buttons
+        updateNavButtons();
+    }
+
+    function loadPhotoAtIndex(index) {
+        const card = allPhotoCards[index];
         const fullImageSrc = card.getAttribute('data-full-image');
         const title = card.querySelector('.photo-title').innerText;
         const date = card.querySelector('.photo-date').innerText;
@@ -631,11 +714,24 @@
         modalTitle.innerText = title;
         modalDate.innerText = date;
         modalCount.innerText = count;
+    }
 
-        // Show modal
-        modal.style.display = "block";
-        // Disable background scrolling
-        document.body.style.overflow = "hidden";
+    function navigatePhoto(direction) {
+        currentPhotoIndex += direction;
+
+        // Ensure we stay within bounds
+        if (currentPhotoIndex < 0) currentPhotoIndex = 0;
+        if (currentPhotoIndex >= allPhotoCards.length) currentPhotoIndex = allPhotoCards.length - 1;
+
+        loadPhotoAtIndex(currentPhotoIndex);
+        updateNavButtons();
+    }
+
+    function updateNavButtons() {
+        // Disable prev button if at first photo
+        prevBtn.disabled = (currentPhotoIndex === 0);
+        // Disable next button if at last photo
+        nextBtn.disabled = (currentPhotoIndex === allPhotoCards.length - 1);
     }
 
     function closeModal() {
