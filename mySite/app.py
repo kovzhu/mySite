@@ -380,6 +380,52 @@ def logout():
     return redirect(url_for("index"))
 
 
+@app.route("/profile", methods=["GET", "POST"])
+@login_required
+def profile():
+    """
+    User profile page for managing account settings.
+    
+    GET: Display profile information
+    POST: Update password or other settings
+    
+    Returns:
+        Rendered template or redirect response
+    """
+    if request.method == "POST":
+        action = request.form.get("action")
+        
+        if action == "change_password":
+            current_password = request.form.get("current_password")
+            new_password = request.form.get("new_password")
+            confirm_password = request.form.get("confirm_password")
+            
+            # Validation
+            if not current_password or not new_password or not confirm_password:
+                flash("All password fields are required!", "error")
+                return render_template("profile.html")
+            
+            if not current_user.check_password(current_password):
+                flash("Current password is incorrect!", "error")
+                return render_template("profile.html")
+            
+            if new_password != confirm_password:
+                flash("New passwords do not match!", "error")
+                return render_template("profile.html")
+            
+            if len(new_password) < 6:
+                flash("Password must be at least 6 characters long!", "error")
+                return render_template("profile.html")
+            
+            # Update password
+            current_user.set_password(new_password)
+            db.session.commit()
+            flash("Password changed successfully!", "success")
+            return redirect(url_for("profile"))
+    
+    return render_template("profile.html")
+
+
 # --- Decorators ---
 
 def admin_required(f):

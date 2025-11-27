@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - K.{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5" style="max-width: 800px;">
+    <h1 class="mb-4">My Profile</h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show"
+        role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Account Information Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Account Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-4"><strong>Username:</strong></div>
+                <div class="col-md-8">{{ current_user.username }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4"><strong>Email:</strong></div>
+                <div class="col-md-8">{{ current_user.email }}</div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4"><strong>Role:</strong></div>
+                <div class="col-md-8">
+                    <span
+                        class="badge bg-{{ 'danger' if current_user.role == 'admin' else 'primary' if current_user.role == 'member' else 'secondary' }}">
+                        {{ current_user.role.title() }}
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4"><strong>Member Since:</strong></div>
+                <div class="col-md-8">{{ current_user.created_at.strftime('%B %d, %Y') }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Card -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Change Password</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('profile') }}">
+                <input type="hidden" name="action" value="change_password">
+
+                <div class="mb-3">
+                    <label for="current_password" class="form-label">Current Password</label>
+                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="new_password" class="form-label">New Password</label>
+                    <input type="password" class="form-control" id="new_password" name="new_password" required
+                        minlength="6">
+                    <div class="form-text">Password must be at least 6 characters long.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
+
+                <button type="submit" class="btn btn-dark">Change Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Account Statistics (Optional) -->
+    {% if current_user.is_member() %}
+    <div class="card mt-4 shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">My Activity</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-4 mb-3">
+                    <h3 class="text-primary">{{ current_user.comments|length }}</h3>
+                    <p class="text-muted mb-0">Comments</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h3 class="text-danger">{{ current_user.likes|length }}</h3>
+                    <p class="text-muted mb-0">Likes</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h3 class="text-success">{{ current_user.messages|length }}</h3>
+                    <p class="text-muted mb-0">Messages Sent</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-dark">← Back to Home</a>
+    </div>
+</div>
+{% endblock %}
