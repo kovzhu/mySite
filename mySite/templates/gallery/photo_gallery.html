@@ -759,5 +759,10 @@
     }
 
 
+    // Ensure body overflow is reset when leaving the page
+    window.addEventListener('beforeunload', () => {
+        document.body.style.overflow = 'auto';
+    });
+
 </script>
 {% endblock %}
