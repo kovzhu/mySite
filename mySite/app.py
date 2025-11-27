@@ -448,18 +448,34 @@ def gallery():
     Returns:
         Rendered photo_gallery.html template with photos organized by month
     """
-    # Get all photos grouped by month
-    photos = Photo.query.order_by(Photo.created_at.desc()).all()
-
-    # Group photos by month
-    photos_by_month = {}
-    for photo in photos:
-        if photo.month not in photos_by_month:
-            photos_by_month[photo.month] = []
-        photos_by_month[photo.month].append(photo)
-
+    # Get distinct years for navigation
+    # We can't easily use distinct() on the year column if some photos might not have it set (though our logic tries to set it)
+    # So we'll query all years efficiently
+    years_query = db.session.query(Photo.year).distinct().all()
+    years = sorted([y[0] for y in years_query if y[0] is not None], reverse=True)
+    
+    # Get current year filter and page
+    selected_year = request.args.get('year')
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    query = Photo.query
+    
+    if selected_year and selected_year != 'all':
+        try:
+            year_int = int(selected_year)
+            query = query.filter_by(year=year_int)
+        except ValueError:
+            pass # Ignore invalid year format
+            
+    # Order by year descending, then by filename descending (assuming higher filenames = newer photos)
+    pagination = query.order_by(Photo.year.desc(), Photo.filename.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    
     return render_template(
-        "gallery/photo_gallery.html", photos_by_month=photos_by_month
+        "gallery/photo_gallery.html", 
+        pagination=pagination, 
+        years=years,
+        selected_year=selected_year if selected_year != 'all' else None
     )
 
 
@@ -936,9 +952,17 @@ def upload_photo():
             filename_without_ext = os.path.splitext(secure_filename(file.filename))[0]
             title = filename_without_ext.replace("_", " ").replace("-", " ").title()
 
+        # Get current year for folder organization
+        current_date = datetime.now()
+        current_year = current_date.year
+        
+        # Create year directory if it doesn't exist
+        year_dir = os.path.join(app.config["PHOTO_UPLOAD_FOLDER"], str(current_year))
+        os.makedirs(year_dir, exist_ok=True)
+
         # Save and resize the file
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config["PHOTO_UPLOAD_FOLDER"], filename)
+        file_path = os.path.join(year_dir, filename)
 
         # Save original file temporarily
         file.save(file_path)
@@ -988,18 +1012,20 @@ def upload_photo():
             return redirect(url_for("gallery"))
 
         # Auto-generate month from current date (format: "nov23", "dec23", etc.)
-        current_date = datetime.now()
         month_abbr = current_date.strftime("%b").lower()  # "nov", "dec", etc.
         year_short = current_date.strftime("%y")  # "23", "24", etc.
         auto_month = f"{month_abbr}{year_short}"
 
         # Create photo record
+        # Store filename as "year/filename"
+        db_filename = f"{current_year}/{filename}"
+        
         new_photo = Photo(
             title=title,
             description=description,
-            filename=filename,
+            filename=db_filename,
             month=auto_month,
-            year=current_date.year,
+            year=current_year,
         )
         db.session.add(new_photo)
         db.session.commit()
