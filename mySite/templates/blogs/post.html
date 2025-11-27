@@ -72,6 +72,26 @@
                 </form>
             </div>
 
+            <!-- Share Section -->
+            <div class="mt-3 mb-4">
+                <div class="d-flex gap-2 flex-wrap">
+                    <button onclick="copyLink()" class="btn btn-outline-success btn-sm">
+                        📋 Copy Link
+                    </button>
+                    <button onclick="showQR()" class="btn btn-outline-primary btn-sm">
+                        📱 Show QR Code
+                    </button>
+                    <button onclick="nativeShare()" class="btn btn-outline-info btn-sm" id="shareBtn"
+                        style="display:none;">
+                        🔗 Share
+                    </button>
+                </div>
+                <div id="qrContainer" class="mt-3" style="display:none;">
+                    <p class="text-muted small">Scan with WeChat:</p>
+                    <img id="qrCode" src="" alt="QR Code" style="max-width: 200px;">
+                </div>
+            </div>
+
             <!-- Comments Section -->
             <div class="mt-5">
                 <h3>Comments ({{ post.comments|length }})</h3>
@@ -137,4 +157,58 @@
     </div>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const pageUrl = window.location.href;
+    const pageTitle = "{{ post.title }}";
+
+    // Copy link to clipboard
+    function copyLink() {
+        navigator.clipboard.writeText(pageUrl).then(() => {
+            alert('Link copied! You can now paste it in WeChat.');
+        }).catch(() => {
+            // Fallback for older browsers
+            const input = document.createElement('input');
+            input.value = pageUrl;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            alert('Link copied! You can now paste it in WeChat.');
+        });
+    }
+
+    // Show QR code
+    function showQR() {
+        const qrContainer = document.getElementById('qrContainer');
+        const qrCode = document.getElementById('qrCode');
+
+        if (qrContainer.style.display === 'none') {
+            // Generate QR code using free API
+            qrCode.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pageUrl)}`;
+            qrContainer.style.display = 'block';
+        } else {
+            qrContainer.style.display = 'none';
+        }
+    }
+
+    // Native share (for mobile devices)
+    function nativeShare() {
+        if (navigator.share) {
+            navigator.share({
+                title: pageTitle,
+                url: pageUrl
+            }).catch((error) => {
+                console.log('Share cancelled');
+            });
+        }
+    }
+
+    // Show native share button if supported
+    if (navigator.share) {
+        document.getElementById('shareBtn').style.display = 'inline-block';
+    }
+</script>
 {% endblock %}
