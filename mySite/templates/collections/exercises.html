@@ -5,129 +5,11 @@
 {% block meta_description %}A visual log of my physical training and exercises{% endblock %}
 
 {% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gallery-modal.css') }}">
 <style>
-    .collection-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 60px 20px 100px;
-    }
-
-    .collection-header {
-        text-align: center;
-        margin-bottom: 60px;
-    }
-
-    .collection-header h1 {
-        font-size: 48px;
-        font-weight: 900;
-        margin-bottom: 15px;
-        color: #343a40;
-    }
-
-    .collection-header p {
-        font-size: 16px;
-        color: #6c757d;
-        max-width: 600px;
-        margin: 0 auto 30px;
-    }
-
-    /* Grid Layout */
-    .collection-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 30px;
-    }
-
+    /* Collection-specific styles */
     .collection-card {
-        position: relative;
-        overflow: hidden;
-        border-radius: 8px;
-        background-color: #f8f9fa;
-        cursor: pointer;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        aspect-ratio: 1/1;
-        /* Square aspect ratio for exercises */
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .collection-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-    }
-
-    .collection-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .collection-card:hover img {
-        transform: scale(1.05);
-    }
-
-    .collection-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 70%, transparent 100%);
-        padding: 20px;
-        color: white;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        height: 100%;
-    }
-
-    .collection-card:hover .collection-overlay {
-        opacity: 1;
-    }
-
-    .collection-title {
-        font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 5px;
-        line-height: 1.3;
-    }
-
-    .collection-description {
-        font-size: 13px;
-        opacity: 0.9;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        color: #6c757d;
-    }
-
-    .empty-state-icon {
-        font-size: 48px;
-        margin-bottom: 20px;
-        opacity: 0.5;
-    }
-
-    .empty-state-text {
-        font-size: 16px;
-        margin-bottom: 20px;
-    }
-
-    @media (max-width: 768px) {
-        .collection-header h1 {
-            font-size: 36px;
-        }
-
-        .collection-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
+        aspect-ratio: 1/1; /* Square aspect ratio for exercises */
     }
 </style>
 {% endblock %}
@@ -152,14 +34,26 @@
     {% if pagination.items %}
     <div class="collection-grid">
         {% for photo in pagination.items %}
-        <div class="collection-card"
-            onclick="openModal('{{ photo.filename }}', '{{ photo.title|replace("'", "\\'") }}', '{{ (photo.description or '')|replace("'", "\\'")|replace('\n', ' ') }}', '{{ photo.created_at.strftime('%B %d, %Y') }}', {{ photo.id }})">
-            <img src="{{ url_for('static', filename='exercise_photos/' + photo.filename) }}" alt="{{ photo.title }}"
-                loading="lazy">
+        <!-- Photo Item -->
+        <div class="collection-card" onclick="openModal(this)"
+            data-full-image="{{ url_for('static', filename='exercise_photos/' + photo.filename) }}"
+            data-description="{{ photo.description if photo.description else '' }}"
+            data-photo-id="{{ photo.id }}">
+            <img src="{{ url_for('static', filename='exercise_photos/' + photo.filename) }}" alt="{{ photo.title }}" loading="lazy">
             <div class="collection-overlay">
-                <div class="collection-title">{{ photo.title }}</div>
-                {% if photo.description %}
-                <div class="collection-description">{{ photo.description }}</div>
+                <div class="text-content">
+                    <div class="collection-title">{{ photo.title }}</div>
+                    <div class="collection-description">{{ photo.created_at.strftime('%b %d, %Y') }}</div>
+                </div>
+                <!-- Delete Button -->
+                {% if current_user.is_authenticated %}
+                <form action="{{ url_for('delete_exercise_photo', photo_id=photo.id) }}" method="POST"
+                    style="display: inline;"
+                    onsubmit="return confirm('Are you sure you want to delete this photo?')">
+                    <button type="submit" class="delete-btn" onclick="event.stopPropagation()">
+                        <span>🗑️</span> Delete
+                    </button>
+                </form>
                 {% endif %}
             </div>
         </div>
@@ -191,48 +85,41 @@
     {% endif %}
 </div>
 
-<!-- Modal -->
-<div id="photoModal" class="modal fade" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Title</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- THE FULL PAGE MODAL TEMPLATE -->
+<div id="photoModal" class="modal">
+    <div class="modal-content-wrapper">
+        <button class="close-btn" onclick="closeModal()" title="Close">&times;</button>
+
+        <!-- Navigation Buttons -->
+        <button class="nav-btn nav-btn-prev" id="prevBtn" onclick="navigatePhoto(-1)" title="Previous">&lsaquo;</button>
+        <button class="nav-btn nav-btn-next" id="nextBtn" onclick="navigatePhoto(1)" title="Next">&rsaquo;</button>
+
+        <img id="modalImg" class="modal-img" src="" alt="">
+        <div class="modal-details">
+            <div>
+                <h2 id="modalTitle" class="modal-title">Title</h2>
+                <div id="modalDate" class="modal-date">Date</div>
             </div>
-            <div class="modal-body text-center">
-                <img id="modalImg" src="" alt="" class="img-fluid" style="max-height: 70vh; object-fit: contain;">
-                <div class="mt-3 text-muted" id="modalDescription"></div>
-                <div class="mt-2 text-muted small" id="modalDate">Date</div>
-                {% if current_user.is_authenticated %}
-                <div class="mt-3">
-                    <form id="deleteForm" method="POST" action="" style="display: inline;">
-                        <button type="submit" class="btn btn-danger btn-sm"
-                            onclick="return confirm('Are you sure you want to delete this photo?')">Delete
-                            Photo</button>
-                    </form>
-                </div>
-                {% endif %}
+            {% if current_user.is_authenticated %}
+            <div class="mt-3">
+                <form id="deleteForm" method="POST" action="" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm"
+                        onclick="return confirm('Are you sure you want to delete this photo?')">Delete Photo</button>
+                </form>
             </div>
+            {% endif %}
+        </div>
+        <div id="modalDescription" style="max-width: 600px; color: #666; line-height: 1.6; display: none;">
+            <p id="modalDescriptionText"></p>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/gallery-modal.js') }}"></script>
 <script>
-    function openModal(filename, title, description, date, id) {
-        const modal = new bootstrap.Modal(document.getElementById('photoModal'));
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalImg').src = "{{ url_for('static', filename='exercise_photos/') }}" + filename;
-        document.getElementById('modalDescription').textContent = description;
-        document.getElementById('modalDate').textContent = date;
-
-        {% if current_user.is_authenticated %}
-        const deleteForm = document.getElementById('deleteForm');
-        deleteForm.action = "{{ url_for('delete_exercise_photo', photo_id=0) }}".replace('0', id);
-        {% endif %}
-
-        modal.show();
-    }
+    // Initialize the gallery modal with delete URL template
+    initGalleryModal("{{ url_for('delete_exercise_photo', photo_id=0) }}");
 </script>
 {% endblock %}

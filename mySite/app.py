@@ -646,15 +646,117 @@ def gallery():
 # --- Collections Routes ---
 
 
+def get_collections_with_last_update():
+    """
+    Get all collections with their last update time for dynamic ordering.
+    
+    Returns:
+        list: List of dictionaries with collection info and last update time
+    """
+    collections_data = []
+    
+    # Define all collections with their models and routes
+    collection_definitions = [
+        {
+            'name': 'Guitar',
+            'route': 'guitar_collection',
+            'models': [GuitarVideo, GuitarPhoto],
+            'description': 'Melodies, chords, and musical journeys',
+            'image': 'guitar.jpg',
+            'fallback_image': 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&h=600&fit=crop'
+        },
+        {
+            'name': 'Videos',
+            'route': 'videos_collection',
+            'models': [CollectionVideo],
+            'description': 'Visual stories worth watching',
+            'image': 'videos.jpg',
+            'fallback_image': 'https://images.unsplash.com/photo-1574267432644-f610f5b17a8e?w=800&h=600&fit=crop'
+        },
+        {
+            'name': 'Books',
+            'route': 'books_collection',
+            'models': [BookPhoto],
+            'description': 'Literary adventures and discoveries',
+            'image': 'books.jpg',
+            'fallback_image': 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=800&h=600&fit=crop'
+        },
+        {
+            'name': 'Reading Quotes',
+            'route': 'reading_quotes_collection',
+            'models': [ReadingQuotePhoto],
+            'description': 'Words that resonated',
+            'image': 'reading_quotes.jpg',
+            'fallback_image': 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=600&fit=crop'
+        },
+        {
+            'name': 'Exercises',
+            'route': 'exercises_collection',
+            'models': [ExercisePhoto],
+            'description': 'Physical discipline',
+            'image': 'exercises.jpg',
+            'fallback_image': 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop'
+        },
+        {
+            'name': 'Intellectual Masturbation',
+            'route': 'intellectual_collection',
+            'models': [IntellectualPhoto],
+            'description': 'Abstract thoughts',
+            'image': 'intellectual.jpg',
+            'fallback_image': 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=800&h=600&fit=crop'
+        },
+        {
+            'name': 'Fragmented Quotes',
+            'route': 'fragmented_quotes_collection',
+            'models': [FragmentedQuotePhoto],
+            'description': 'Bits and pieces',
+            'image': 'fragmented.jpg',
+            'fallback_image': 'https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&h=600&fit=crop'
+        }
+    ]
+    
+    for collection in collection_definitions:
+        last_update = None
+        
+        # Find the most recent created_at from all models in this collection
+        for model in collection['models']:
+            try:
+                latest_item = model.query.order_by(model.created_at.desc()).first()
+                if latest_item and (last_update is None or latest_item.created_at > last_update):
+                    last_update = latest_item.created_at
+            except Exception as e:
+                # If there's an error (e.g., table doesn't exist), continue to next model
+                continue
+        
+        # If no items found, use a default date (very old)
+        if last_update is None:
+            last_update = datetime(2000, 1, 1)
+        
+        collections_data.append({
+            'name': collection['name'],
+            'route': collection['route'],
+            'description': collection['description'],
+            'image': collection['image'],
+            'fallback_image': collection['fallback_image'],
+            'last_update': last_update
+        })
+    
+    # Sort collections by last_update in descending order (most recent first)
+    collections_data.sort(key=lambda x: x['last_update'], reverse=True)
+    
+    return collections_data
+
+
 @app.route("/collections")
 def collections():
     """
-    Collections page route displaying various curated collections.
+    Collections page route displaying various curated collections with dynamic ordering.
 
     Returns:
-        Rendered collections/index.html template
+        Rendered collections/index.html template with sorted collections
     """
-    return render_template("collections/index.html")
+    collections_data = get_collections_with_last_update()
+    return render_template("collections/index.html", collections=collections_data)
 
 
 @app.route("/collections/guitar")

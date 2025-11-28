@@ -74,8 +74,8 @@ git push origin main
 1. **Upload the zip file** to your server (using scp, sftp, or your preferred method)
 2. **Unzip on the server**:
    ```bash
-   # Navigate to your project directory
-   cd /path/to/your/mySite
+   # Navigate to your project ROOT directory (where mySite folder is located)
+   cd /path/to/your/project-root/
    
    # Unzip the file (this will create the directory structure)
    unzip all_photos_YYYYMMDD_HHMMSS.zip
@@ -90,6 +90,27 @@ git push origin main
    ls -la mySite/static/book_photos/
    ls -la mySite/static/gallery_images/
    ```
+
+### Server Directory Structure
+
+When you unzip the file, it should create this structure:
+
+```
+/path/to/your/project-root/
+├── mySite/                    # Your main application folder
+│   ├── static/               # Static files directory
+│   │   ├── gallery_images/   # Gallery photos
+│   │   ├── book_photos/      # Book collection photos
+│   │   ├── exercise_photos/  # Exercise photos
+│   │   └── ...              # Other photo directories
+│   ├── app.py
+│   └── ...
+├── requirements.txt
+├── run.py
+└── ...
+```
+
+**Important**: Unzip the file in the **same directory level** where your `mySite` folder is located, NOT inside the `mySite` folder itself.
 
 ## 🛠️ Deployment Script Commands
 
@@ -127,8 +148,8 @@ The `deploy_photos.sh` script provides several useful commands:
 # Upload to server (example using scp)
 scp all_photos_*.zip user@your-server.com:/tmp/
 
-# On server
-cd /path/to/your/mySite
+# On server - navigate to project ROOT directory (where mySite folder is)
+cd /path/to/your/project-root/
 unzip /tmp/all_photos_*.zip
 
 # Restart your application if needed
