@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Guitar Video - K.{% endblock %}
+
+{% block head %}
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .upload-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+
+    .upload-header p {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #343a40;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-input-wrapper input[type=file] {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .file-input-label {
+        display: block;
+        padding: 12px;
+        background-color: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-input-label:hover {
+        background-color: #e9ecef;
+        border-color: #343a40;
+    }
+
+    .file-name {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background-color: #343a40;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #495057;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="upload-header">
+        <h1>📹 Upload Guitar Video</h1>
+        <p>Share your guitar performance or practice session</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="title" class="form-label">Title *</label>
+            <input type="text" id="title" name="title" class="form-control" required
+                placeholder="e.g., Wonderwall Cover">
+        </div>
+
+        <div class="form-group">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" name="description" class="form-control"
+                placeholder="Tell us about this video..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Video File * (MP4, MOV, AVI)</label>
+            <div class="file-input-wrapper">
+                <input type="file" id="video" name="video" accept="video/*" required onchange="updateFileName(this)">
+                <label for="video" class="file-input-label">
+                    📁 Click to select video file
+                </label>
+            </div>
+            <div id="fileName" class="file-name"></div>
+        </div>
+
+        <div class="btn-group">
+            <a href="{{ url_for('guitar_collection') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Upload Video</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function updateFileName(input) {
+        const fileNameDiv = document.getElementById('fileName');
+        if (input.files && input.files[0]) {
+            fileNameDiv.textContent = '📹 ' + input.files[0].name;
+        } else {
+            fileNameDiv.textContent = '';
+        }
+    }
+</script>
+{% endblock %}

@@ -286,6 +286,124 @@ class Photo(db.Model):
     year = db.Column(db.Integer, default=datetime.now().year)
 
 
+class GuitarVideo(db.Model):
+    """
+    GuitarVideo model representing uploaded guitar performance videos.
+    
+    Attributes:
+        id (int): Primary key
+        title (str): Video title
+        description (str): Optional description
+        filename (str): Name of the video file
+        thumbnail (str): Optional thumbnail image filename
+        created_at (datetime): Timestamp when video was uploaded
+    """
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    thumbnail = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class GuitarPhoto(db.Model):
+    """
+    GuitarPhoto model representing guitar-related photos.
+    
+    Attributes:
+        id (int): Primary key
+        title (str): Photo title
+        description (str): Optional description
+        filename (str): Name of the image file
+        created_at (datetime): Timestamp when photo was uploaded
+    """
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class CollectionVideo(db.Model):
+    """
+    CollectionVideo model representing videos in the Videos collection.
+    
+    Attributes:
+        id (int): Primary key
+        title (str): Video title
+        description (str): Optional description
+        filename (str): Name of the video file
+        thumbnail (str): Optional thumbnail image filename
+        category (str): Optional category/tag
+        created_at (datetime): Timestamp when video was uploaded
+    """
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    thumbnail = db.Column(db.String(255))
+    category = db.Column(db.String(50))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class BookPhoto(db.Model):
+    """
+    BookPhoto model representing book cover photos in the Books collection.
+    
+    Attributes:
+        id (int): Primary key
+        title (str): Book title or photo title
+        description (str): Optional description
+        filename (str): Name of the image file
+        created_at (datetime): Timestamp when photo was uploaded
+    """
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ExercisePhoto(db.Model):
+    """Model for Exercises collection."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ReadingQuotePhoto(db.Model):
+    """Model for Reading Quotes collection."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class IntellectualPhoto(db.Model):
+    """Model for Intellectual Masturbation collection."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class FragmentedQuotePhoto(db.Model):
+    """Model for Fragmented Quotes collection."""
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    filename = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # --- Authentication Routes ---
 
 
@@ -523,6 +641,566 @@ def gallery():
         years=years,
         selected_year=selected_year if selected_year != 'all' else None
     )
+
+
+# --- Collections Routes ---
+
+
+@app.route("/collections")
+def collections():
+    """
+    Collections page route displaying various curated collections.
+
+    Returns:
+        Rendered collections/index.html template
+    """
+    return render_template("collections/index.html")
+
+
+@app.route("/collections/guitar")
+def guitar_collection():
+    """
+    Guitar collection page displaying videos and photos.
+    
+    Returns:
+        Rendered collections/guitar.html template with videos and photos
+    """
+    videos = GuitarVideo.query.order_by(GuitarVideo.created_at.desc()).all()
+    photos = GuitarPhoto.query.order_by(GuitarPhoto.created_at.desc()).all()
+    return render_template("collections/guitar.html", videos=videos, photos=photos)
+
+
+@app.route("/collections/guitar/upload-video", methods=["GET", "POST"])
+@login_required
+def upload_guitar_video():
+    """
+    Upload a guitar video.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        video_file = request.files.get("video")
+        
+        if not title or not video_file or video_file.filename == "":
+            flash("Title and video file are required!", "error")
+            return redirect(url_for("guitar_collection"))
+        
+        # Save video file
+        video_filename = secure_filename(video_file.filename)
+        video_path = os.path.join(basedir, "static", "guitar_videos", video_filename)
+        os.makedirs(os.path.dirname(video_path), exist_ok=True)
+        video_file.save(video_path)
+        
+        # Create database entry
+        new_video = GuitarVideo(
+            title=title,
+            description=description,
+            filename=video_filename
+        )
+        db.session.add(new_video)
+        db.session.commit()
+        
+        flash("Video uploaded successfully!", "success")
+        return redirect(url_for("guitar_collection"))
+    
+    return render_template("collections/upload_guitar_video.html")
+
+
+@app.route("/collections/guitar/upload-photo", methods=["GET", "POST"])
+@login_required
+def upload_guitar_photo():
+    """
+    Upload a guitar photo.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        photo_file = request.files.get("photo")
+        
+        if not title or not photo_file or photo_file.filename == "":
+            flash("Title and photo file are required!", "error")
+            return redirect(url_for("guitar_collection"))
+        
+        # Save photo file
+        photo_filename = secure_filename(photo_file.filename)
+        photo_path = os.path.join(basedir, "static", "guitar_photos", photo_filename)
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        photo_file.save(photo_path)
+        
+        # Create database entry
+        new_photo = GuitarPhoto(
+            title=title,
+            description=description,
+            filename=photo_filename
+        )
+        db.session.add(new_photo)
+        db.session.commit()
+        
+        flash("Photo uploaded successfully!", "success")
+        return redirect(url_for("guitar_collection"))
+    
+    return render_template("collections/upload_guitar_photo.html")
+
+
+@app.route("/collections/guitar/delete-video/<int:video_id>", methods=["POST"])
+@login_required
+def delete_guitar_video(video_id):
+    """
+    Delete a guitar video.
+    """
+    video = GuitarVideo.query.get_or_404(video_id)
+    
+    # Delete file
+    video_path = os.path.join(basedir, "static", "guitar_videos", video.filename)
+    if os.path.exists(video_path):
+        os.remove(video_path)
+    
+    db.session.delete(video)
+    db.session.commit()
+    
+    flash("Video deleted successfully!", "info")
+    return redirect(url_for("guitar_collection"))
+
+
+@app.route("/collections/guitar/delete-photo/<int:photo_id>", methods=["POST"])
+@login_required
+def delete_guitar_photo(photo_id):
+    """
+    Delete a guitar photo.
+    """
+    photo = GuitarPhoto.query.get_or_404(photo_id)
+    
+    # Delete file
+    photo_path = os.path.join(basedir, "static", "guitar_photos", photo.filename)
+    if os.path.exists(photo_path):
+        os.remove(photo_path)
+    
+    db.session.delete(photo)
+    db.session.commit()
+    
+    flash("Photo deleted successfully!", "info")
+    return redirect(url_for("guitar_collection"))
+
+
+@app.route("/collections/videos")
+def videos_collection():
+    """
+    Videos collection page displaying all videos.
+    
+    Returns:
+        Rendered collections/videos.html template with videos
+    """
+    videos = CollectionVideo.query.order_by(CollectionVideo.created_at.desc()).all()
+    return render_template("collections/videos.html", videos=videos)
+
+
+@app.route("/collections/videos/upload", methods=["GET", "POST"])
+@login_required
+def upload_collection_video():
+    """
+    Upload a video to the Videos collection.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        category = request.form.get("category", "")
+        video_file = request.files.get("video")
+        
+        if not title or not video_file or video_file.filename == "":
+            flash("Title and video file are required!", "error")
+            return redirect(url_for("videos_collection"))
+        
+        # Save video file
+        video_filename = secure_filename(video_file.filename)
+        video_path = os.path.join(basedir, "static", "collection_videos", video_filename)
+        os.makedirs(os.path.dirname(video_path), exist_ok=True)
+        video_file.save(video_path)
+        
+        # Create database entry
+        new_video = CollectionVideo(
+            title=title,
+            description=description,
+            category=category,
+            filename=video_filename
+        )
+        db.session.add(new_video)
+        db.session.commit()
+        
+        flash("Video uploaded successfully!", "success")
+        return redirect(url_for("videos_collection"))
+    
+    return render_template("collections/upload_video.html")
+
+
+@app.route("/collections/videos/delete/<int:video_id>", methods=["POST"])
+@login_required
+def delete_collection_video(video_id):
+    """
+    Delete a video from the Videos collection.
+    """
+    video = CollectionVideo.query.get_or_404(video_id)
+    
+    # Delete file
+    video_path = os.path.join(basedir, "static", "collection_videos", video.filename)
+    if os.path.exists(video_path):
+        os.remove(video_path)
+    
+    db.session.delete(video)
+    db.session.commit()
+    
+    flash("Video deleted successfully!", "info")
+    return redirect(url_for("videos_collection"))
+
+
+@app.route("/collections/books")
+def books_collection():
+    """
+    Books collection page displaying book photos with pagination.
+    
+    Returns:
+        Rendered collections/books.html template with book photos
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    
+    pagination = BookPhoto.query.order_by(BookPhoto.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    
+    return render_template("collections/books.html", pagination=pagination)
+
+
+@app.route("/collections/books/upload", methods=["GET", "POST"])
+@login_required
+def upload_book_photo():
+    """
+    Upload a book photo.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        photo_file = request.files.get("photo")
+        
+        if not title or not photo_file or photo_file.filename == "":
+            flash("Title and photo file are required!", "error")
+            return redirect(url_for("books_collection"))
+        
+        # Save photo file
+        photo_filename = secure_filename(photo_file.filename)
+        # Ensure unique filename to prevent overwrites
+        base, ext = os.path.splitext(photo_filename)
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        photo_filename = f"{base}_{timestamp}{ext}"
+        
+        photo_path = os.path.join(basedir, "static", "book_photos", photo_filename)
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        photo_file.save(photo_path)
+        
+        # Create database entry
+        new_photo = BookPhoto(
+            title=title,
+            description=description,
+            filename=photo_filename
+        )
+        db.session.add(new_photo)
+        db.session.commit()
+        
+        flash("Book photo uploaded successfully!", "success")
+        return redirect(url_for("books_collection"))
+    
+    return render_template("collections/upload_generic_photo.html", 
+                           collection_name="Books", 
+                           upload_action=url_for('upload_book_photo'))
+
+
+@app.route("/collections/books/delete/<int:book_id>", methods=["POST"])
+@login_required
+def delete_book_photo(book_id):
+    """
+    Delete a book photo from the Books collection.
+    """
+    book = BookPhoto.query.get_or_404(book_id)
+    
+    # Delete file
+    book_path = os.path.join(basedir, "static", "book_photos", book.filename)
+    if os.path.exists(book_path):
+        os.remove(book_path)
+    
+    db.session.delete(book)
+    db.session.commit()
+    
+    flash("Book photo deleted successfully!", "info")
+    return redirect(url_for("books_collection"))
+
+
+@app.route("/collections/exercises")
+def exercises_collection():
+    """
+    Exercises collection page.
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    pagination = ExercisePhoto.query.order_by(ExercisePhoto.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template("collections/exercises.html", pagination=pagination)
+
+
+@app.route("/collections/exercises/upload", methods=["GET", "POST"])
+@login_required
+def upload_exercise_photo():
+    """
+    Upload an exercise photo.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        photo_file = request.files.get("photo")
+        
+        if not title or not photo_file or photo_file.filename == "":
+            flash("Title and photo file are required!", "error")
+            return redirect(url_for("exercises_collection"))
+        
+        # Save photo file
+        photo_filename = secure_filename(photo_file.filename)
+        # Ensure unique filename to prevent overwrites
+        base, ext = os.path.splitext(photo_filename)
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        photo_filename = f"{base}_{timestamp}{ext}"
+        
+        photo_path = os.path.join(basedir, "static", "exercise_photos", photo_filename)
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        photo_file.save(photo_path)
+        
+        # Create database entry
+        new_photo = ExercisePhoto(
+            title=title,
+            description=description,
+            filename=photo_filename
+        )
+        db.session.add(new_photo)
+        db.session.commit()
+        
+        flash("Exercise photo uploaded successfully!", "success")
+        return redirect(url_for("exercises_collection"))
+    
+    return render_template("collections/upload_generic_photo.html", 
+                           collection_name="Exercises", 
+                           upload_action=url_for('upload_exercise_photo'))
+
+
+@app.route("/collections/exercises/delete/<int:photo_id>", methods=["POST"])
+@login_required
+def delete_exercise_photo(photo_id):
+    """Delete an exercise photo."""
+    photo = ExercisePhoto.query.get_or_404(photo_id)
+    photo_path = os.path.join(basedir, "static", "exercise_photos", photo.filename)
+    if os.path.exists(photo_path):
+        os.remove(photo_path)
+    db.session.delete(photo)
+    db.session.commit()
+    flash("Photo deleted successfully!", "info")
+    return redirect(url_for("exercises_collection"))
+
+
+@app.route("/collections/reading-quotes")
+def reading_quotes_collection():
+    """
+    Reading Quotes collection page.
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    pagination = ReadingQuotePhoto.query.order_by(ReadingQuotePhoto.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template("collections/reading_quotes.html", pagination=pagination)
+
+
+@app.route("/collections/reading-quotes/upload", methods=["GET", "POST"])
+@login_required
+def upload_reading_quote_photo():
+    """
+    Upload a reading quote photo.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        photo_file = request.files.get("photo")
+        
+        if not title or not photo_file or photo_file.filename == "":
+            flash("Title and photo file are required!", "error")
+            return redirect(url_for("reading_quotes_collection"))
+        
+        # Save photo file
+        photo_filename = secure_filename(photo_file.filename)
+        # Ensure unique filename to prevent overwrites
+        base, ext = os.path.splitext(photo_filename)
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        photo_filename = f"{base}_{timestamp}{ext}"
+        
+        photo_path = os.path.join(basedir, "static", "reading_quote_photos", photo_filename)
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        photo_file.save(photo_path)
+        
+        # Create database entry
+        new_photo = ReadingQuotePhoto(
+            title=title,
+            description=description,
+            filename=photo_filename
+        )
+        db.session.add(new_photo)
+        db.session.commit()
+        
+        flash("Reading quote uploaded successfully!", "success")
+        return redirect(url_for("reading_quotes_collection"))
+    
+    return render_template("collections/upload_generic_photo.html", 
+                           collection_name="Reading Quotes", 
+                           upload_action=url_for('upload_reading_quote_photo'))
+
+
+@app.route("/collections/reading-quotes/delete/<int:photo_id>", methods=["POST"])
+@login_required
+def delete_reading_quote_photo(photo_id):
+    """Delete a reading quote photo."""
+    photo = ReadingQuotePhoto.query.get_or_404(photo_id)
+    photo_path = os.path.join(basedir, "static", "reading_quote_photos", photo.filename)
+    if os.path.exists(photo_path):
+        os.remove(photo_path)
+    db.session.delete(photo)
+    db.session.commit()
+    flash("Photo deleted successfully!", "info")
+    return redirect(url_for("reading_quotes_collection"))
+
+
+@app.route("/collections/intellectual-masturbation")
+def intellectual_collection():
+    """
+    Intellectual Masturbation collection page.
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    pagination = IntellectualPhoto.query.order_by(IntellectualPhoto.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template("collections/intellectual_masturbation.html", pagination=pagination)
+
+
+@app.route("/collections/intellectual-masturbation/upload", methods=["GET", "POST"])
+@login_required
+def upload_intellectual_photo():
+    """
+    Upload an intellectual masturbation photo.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        photo_file = request.files.get("photo")
+        
+        if not title or not photo_file or photo_file.filename == "":
+            flash("Title and photo file are required!", "error")
+            return redirect(url_for("intellectual_collection"))
+        
+        # Save photo file
+        photo_filename = secure_filename(photo_file.filename)
+        # Ensure unique filename to prevent overwrites
+        base, ext = os.path.splitext(photo_filename)
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        photo_filename = f"{base}_{timestamp}{ext}"
+        
+        photo_path = os.path.join(basedir, "static", "intellectual_photos", photo_filename)
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        photo_file.save(photo_path)
+        
+        # Create database entry
+        new_photo = IntellectualPhoto(
+            title=title,
+            description=description,
+            filename=photo_filename
+        )
+        db.session.add(new_photo)
+        db.session.commit()
+        
+        flash("Intellectual masturbation photo uploaded successfully!", "success")
+        return redirect(url_for("intellectual_collection"))
+    
+    return render_template("collections/upload_generic_photo.html", 
+                           collection_name="Intellectual Masturbation", 
+                           upload_action=url_for('upload_intellectual_photo'))
+
+
+@app.route("/collections/intellectual-masturbation/delete/<int:photo_id>", methods=["POST"])
+@login_required
+def delete_intellectual_photo(photo_id):
+    """Delete an intellectual masturbation photo."""
+    photo = IntellectualPhoto.query.get_or_404(photo_id)
+    photo_path = os.path.join(basedir, "static", "intellectual_photos", photo.filename)
+    if os.path.exists(photo_path):
+        os.remove(photo_path)
+    db.session.delete(photo)
+    db.session.commit()
+    flash("Photo deleted successfully!", "info")
+    return redirect(url_for("intellectual_collection"))
+
+
+@app.route("/collections/fragmented-quotes")
+def fragmented_quotes_collection():
+    """
+    Fragmented Quotes collection page.
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+    pagination = FragmentedQuotePhoto.query.order_by(FragmentedQuotePhoto.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    return render_template("collections/fragmented_quotes.html", pagination=pagination)
+
+
+@app.route("/collections/fragmented-quotes/upload", methods=["GET", "POST"])
+@login_required
+def upload_fragmented_quote_photo():
+    """
+    Upload a fragmented quote photo.
+    """
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description", "")
+        photo_file = request.files.get("photo")
+        
+        if not title or not photo_file or photo_file.filename == "":
+            flash("Title and photo file are required!", "error")
+            return redirect(url_for("fragmented_quotes_collection"))
+        
+        # Save photo file
+        photo_filename = secure_filename(photo_file.filename)
+        # Ensure unique filename to prevent overwrites
+        base, ext = os.path.splitext(photo_filename)
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        photo_filename = f"{base}_{timestamp}{ext}"
+        
+        photo_path = os.path.join(basedir, "static", "fragmented_quote_photos", photo_filename)
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+        photo_file.save(photo_path)
+        
+        # Create database entry
+        new_photo = FragmentedQuotePhoto(
+            title=title,
+            description=description,
+            filename=photo_filename
+        )
+        db.session.add(new_photo)
+        db.session.commit()
+        
+        flash("Fragmented quote uploaded successfully!", "success")
+        return redirect(url_for("fragmented_quotes_collection"))
+    
+    return render_template("collections/upload_generic_photo.html", 
+                           collection_name="Fragmented Quotes", 
+                           upload_action=url_for('upload_fragmented_quote_photo'))
+
+
+@app.route("/collections/fragmented-quotes/delete/<int:photo_id>", methods=["POST"])
+@login_required
+def delete_fragmented_quote_photo(photo_id):
+    """Delete a fragmented quote photo."""
+    photo = FragmentedQuotePhoto.query.get_or_404(photo_id)
+    photo_path = os.path.join(basedir, "static", "fragmented_quote_photos", photo.filename)
+    if os.path.exists(photo_path):
+        os.remove(photo_path)
+    db.session.delete(photo)
+    db.session.commit()
+    flash("Photo deleted successfully!", "info")
+    return redirect(url_for("fragmented_quotes_collection"))
 
 
 # --- Blog Post Routes ---

@@ -46,6 +46,20 @@ mySite/static/gallery_images
 # Exclude thumbnails
 mySite/static/gallery_images/thumbnails
 
+# Collection photos
+mySite/static/book_photos/
+mySite/static/exercise_photos/
+mySite/static/reading_quote_photos/
+mySite/static/intellectual_photos/
+mySite/static/fragmented_quote_photos/
+mySite/static/guitar_photos/
+mySite/static/guitar_videos/
+mySite/static/collection_images/
+mySite/static/collection_videos/
+mySite/static/personal_images/
+mySite/static/project_images/
+mySite/static/blog_media/
+
 # Zip files
 *.zip
 gallery_images.zip

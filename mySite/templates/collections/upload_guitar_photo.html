@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Guitar Photo - K.{% endblock %}
+
+{% block head %}
+<style>
+    .upload-container {
+        max-width: 600px;
+        margin: 80px auto;
+        padding: 40px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .upload-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #343a40;
+        margin-bottom: 10px;
+    }
+
+    .upload-header p {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #343a40;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-input-wrapper input[type=file] {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .file-input-label {
+        display: block;
+        padding: 12px;
+        background-color: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 5px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .file-input-label:hover {
+        background-color: #e9ecef;
+        border-color: #343a40;
+    }
+
+    .preview-container {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 5px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-name {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #6c757d;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 12px 25px;
+        border: none;
+        border-radius: 5px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background-color: #343a40;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #495057;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="upload-container">
+    <div class="upload-header">
+        <h1>📷 Upload Guitar Photo</h1>
+        <p>Capture your guitar moments and memories</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="title" class="form-label">Title *</label>
+            <input type="text" id="title" name="title" class="form-control" required
+                placeholder="e.g., My Taylor 814ce">
+        </div>
+
+        <div class="form-group">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" name="description" class="form-control"
+                placeholder="Tell us about this photo..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Photo File * (JPG, PNG, HEIC)</label>
+            <div class="file-input-wrapper">
+                <input type="file" id="photo" name="photo" accept="image/*" required onchange="previewImage(this)">
+                <label for="photo" class="file-input-label">
+                    📁 Click to select photo file
+                </label>
+            </div>
+            <div id="fileName" class="file-name"></div>
+            <div id="previewContainer" class="preview-container" style="display: none;">
+                <img id="preview" class="preview-image" src="" alt="Preview">
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="{{ url_for('guitar_collection') }}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Upload Photo</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function previewImage(input) {
+        const fileNameDiv = document.getElementById('fileName');
+        const previewContainer = document.getElementById('previewContainer');
+        const preview = document.getElementById('preview');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                preview.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+
+            reader.readAsDataURL(input.files[0]);
+            fileNameDiv.textContent = '📷 ' + input.files[0].name;
+        } else {
+            fileNameDiv.textContent = '';
+            previewContainer.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

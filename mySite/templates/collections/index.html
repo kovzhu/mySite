@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}Collections - K.{% endblock %}
+
+{% block meta_description %}Explore my curated collections: Guitar, Videos, Books, Reading Quotes, Exercises,
+Intellectual Masturbation, and Fragmented Quotes.{% endblock %}
+
+{% block head %}
+<style>
+    .collections-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 60px 20px 100px;
+    }
+
+    .collections-header {
+        text-align: center;
+        margin-bottom: 60px;
+    }
+
+    .collections-header h1 {
+        font-size: 48px;
+        font-weight: 900;
+        margin-bottom: 15px;
+        color: #343a40;
+    }
+
+    .collections-header p {
+        font-size: 16px;
+        color: #6c757d;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .collections-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+    }
+
+    .collection-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        aspect-ratio: 4/3;
+    }
+
+    .collection-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .collection-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .collection-card:hover .collection-image {
+        transform: scale(1.05);
+    }
+
+    .collection-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+        padding: 30px 25px 25px;
+        color: white;
+    }
+
+    .collection-title {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: white;
+    }
+
+    .collection-description {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        .collections-header h1 {
+            font-size: 36px;
+        }
+
+        .collections-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .collection-card {
+            aspect-ratio: 3/2;
+        }
+
+        .collection-title {
+            font-size: 20px;
+        }
+
+        .collection-description {
+            font-size: 13px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="collections-container">
+    <div class="collections-header">
+        <h1>Collections</h1>
+        <p>A curated space for the things that inspire, challenge, and move me</p>
+    </div>
+
+    <div class="collections-grid">
+        <!-- Guitar Collection -->
+        <a href="{{ url_for('guitar_collection') }}" class="collection-card">
+            <img src="{{ url_for('static', filename='collection_images/guitar.jpg') }}" alt="Guitar Collection"
+                class="collection-image"
+                onerror="this.src='https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=800&h=600&fit=crop'">
+            <div class="collection-overlay">
+                <div class="collection-title">Guitar</div>
+                <div class="collection-description">Melodies, chords, and musical journeys</div>
+            </div>
+        </a>
+
+        <!-- Videos Collection -->
+        <a href="{{ url_for('videos_collection') }}" class="collection-card">
+            <img src="{{ url_for('static', filename='collection_images/videos.jpg') }}" alt="Videos Collection"
+                class="collection-image"
+                onerror="this.src='https://images.unsplash.com/photo-1574267432644-f610f5b17a8e?w=800&h=600&fit=crop'">
+            <div class="collection-overlay">
+                <div class="collection-title">Videos</div>
+                <div class="collection-description">Visual stories worth watching</div>
+            </div>
+        </a>
+
+        <!-- Books Collection -->
+        <a href="{{ url_for('books_collection') }}" class="collection-card">
+            <img src="{{ url_for('static', filename='collection_images/books.jpg') }}" alt="Books Collection"
+                class="collection-image"
+                onerror="this.src='https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=800&h=600&fit=crop'">
+            <div class="collection-overlay">
+                <div class="collection-title">Books</div>
+                <div class="collection-description">Literary adventures and discoveries</div>
+            </div>
+        </a>
+
+        <!-- Reading Quotes Collection -->
+        <a href="{{ url_for('reading_quotes_collection') }}" class="collection-card">
+            <img src="{{ url_for('static', filename='collection_images/reading_quotes.jpg') }}" alt="Reading Quotes"
+                class="collection-image"
+                onerror="this.src='https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=600&fit=crop'">
+            <div class="collection-overlay">
+                <h3 class="collection-title">Reading Quotes</h3>
+                <p class="collection-description">Words that resonated</p>
+            </div>
+        </a>
+
+        <!-- Exercises Collection -->
+        <a href="{{ url_for('exercises_collection') }}" class="collection-card">
+            <img src="{{ url_for('static', filename='collection_images/exercises.jpg') }}" alt="Exercises Collection"
+                class="collection-image"
+                onerror="this.src='https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=600&fit=crop'">
+            <div class="collection-overlay">
+                <h3 class="collection-title">Exercises</h3>
+                <p class="collection-description">Physical discipline</p>
+            </div>
+        </a>
+
+        <!-- Intellectual Masturbation Collection -->
+        <a href="{{ url_for('intellectual_collection') }}" class="collection-card">
+            <img src="{{ url_for('static', filename='collection_images/intellectual.jpg') }}"
+                alt="Intellectual Masturbation" class="collection-image"
+                onerror="this.src='https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=800&h=600&fit=crop'">
+            <div class="collection-overlay">
+                <h3 class="collection-title">Intellectual Masturbation</h3>
+                <p class="collection-description">Abstract thoughts</p>
+            </div>
+        </a>
+
+        <!-- Fragmented Quotes Collection -->
+        <a href="{{ url_for('fragmented_quotes_collection') }}" class="collection-card">
+            <img src="{{ url_for('static', filename='collection_images/fragmented.jpg') }}" alt="Fragmented Quotes"
+                class="collection-image"
+                onerror="this.src='https://images.unsplash.com/photo-1455849318743-b2233052fcff?w=800&h=600&fit=crop'">
+            <div class="collection-overlay">
+                <h3 class="collection-title">Fragmented Quotes</h3>
+                <p class="collection-description">Bits and pieces</p>
+            </div>
+        </a>
+    </div>
+</div>
+{% endblock %}
