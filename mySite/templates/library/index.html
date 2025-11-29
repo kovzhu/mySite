@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Library - K.{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold" style="font-family: 'Inter', sans-serif;">Library</h1>
+        <p class="lead text-muted">A collection of books and resources.</p>
+    </div>
+
+    <div class="row g-4">
+        {% for category in categories %}
+        <div class="col-md-4 col-lg-3">
+            <a href="{{ url_for('library_category', category=category) }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm hover-card" style="transition: transform 0.3s ease;">
+                    <div class="card-body d-flex flex-column justify-content-center align-items-center p-5 text-center"
+                        style="background: #f8f9fa; border-radius: 12px;">
+                        <div class="mb-3" style="font-size: 3rem;">📚</div>
+                        <h5 class="card-title fw-bold text-dark mb-0">{{ category }}</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% else %}
+        <div class="col-12 text-center">
+            <p class="text-muted">No categories found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, .1) !important;
+    }
+</style>
+{% endblock %}

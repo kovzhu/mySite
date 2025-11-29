@@ -59,6 +59,7 @@ mySite/static/collection_videos/
 mySite/static/personal_images/
 mySite/static/project_images/
 mySite/static/blog_media/
+mySite/static/library_books/
 
 # Zip files
 *.zip

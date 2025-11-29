@@ -13,6 +13,7 @@ Author: K.
 
 import os
 import json
+from urllib.parse import quote
 from flask import (
     Flask,
     render_template,
@@ -350,6 +351,25 @@ class CollectionVideo(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class Book(db.Model):
+    """
+    Book model representing downloadable books in the Library.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    author = db.Column(db.String(100))
+    category = db.Column(db.String(100), nullable=False)
+    filename = db.Column(db.String(255), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False) # Relative path in static folder
+    description = db.Column(db.Text)
+    is_public = db.Column(db.Boolean, default=True)  # Whether the book is visible to public/readers
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<Book {self.title}>'
+
+
+
 class BookPhoto(db.Model):
     """
     BookPhoto model representing book cover photos in the Books collection.
@@ -620,21 +640,134 @@ def ideas():
     except Exception as e:
         print(f"Error loading rotating texts: {e}")
 
-    # Load books
-    books_path = os.path.join(app.static_folder, 'books.json')
-    books = []
-    try:
-        with open(books_path, 'r', encoding='utf-8') as f:
-            books = json.load(f)
-    except Exception as e:
-        print(f"Error loading books: {e}")
+    # Fetch categories for the Library section
+    categories = db.session.query(Book.category).distinct().all()
+    categories = sorted([c[0] for c in categories])
 
     # Check permission for downloads
     can_download = False
-    if current_user.is_authenticated and (current_user.is_admin() or current_user.is_member()):
+    if current_user.is_authenticated and (current_user.is_member() or current_user.is_admin()):
         can_download = True
 
-    return render_template("ideas.html", quotes=quotes, books=books, can_download=can_download)
+    return render_template("ideas.html", quotes=quotes, categories=categories, can_download=can_download)
+
+
+# --- Library Routes ---
+
+@app.route("/library")
+def library_index():
+    """
+    Library landing page showing book categories.
+    """
+    # Get distinct categories
+    categories = db.session.query(Book.category).distinct().all()
+    categories = sorted([c[0] for c in categories])
+    
+    return render_template("library/index.html", categories=categories)
+
+@app.route("/library/<category>")
+def library_category(category):
+    """
+    Display books in a specific category.
+    """
+    query = Book.query.filter_by(category=category)
+    
+    # If user is not admin or member, only show public books
+    if not current_user.is_authenticated or (current_user.role == 'reader'):
+        query = query.filter_by(is_public=True)
+    
+    books = query.order_by(Book.title).all()
+    return render_template("library/category.html", category=category, books=books)
+
+@app.route("/library/<category>/upload", methods=["POST"])
+@member_required
+def upload_book(category):
+    """
+    Upload a new book to a category.
+    """
+    if 'file' not in request.files:
+        flash('No file part', 'error')
+        return redirect(url_for('library_category', category=category))
+        
+    file = request.files['file']
+    if file.filename == '':
+        flash('No selected file', 'error')
+        return redirect(url_for('library_category', category=category))
+        
+    if file:
+        filename = secure_filename(file.filename)
+        # Ensure category directory exists
+        category_dir = os.path.join(app.static_folder, 'library_books', category)
+        os.makedirs(category_dir, exist_ok=True)
+        
+        file_path = os.path.join(category_dir, filename)
+        file.save(file_path)
+        
+        # Create DB entry
+        # Try to parse author/title
+        name_without_ext = os.path.splitext(filename)[0]
+        if ' - ' in name_without_ext:
+            parts = name_without_ext.split(' - ', 1)
+            author = parts[0].strip()
+            title = parts[1].strip()
+        else:
+            author = "Unknown"
+            title = name_without_ext
+            
+        new_book = Book(
+            title=title,
+            author=author,
+            category=category,
+            filename=filename,
+            file_path=f"library_books/{category}/{filename}",
+            upload_date=datetime.utcnow()
+        )
+        db.session.add(new_book)
+        db.session.commit()
+        
+        flash('Book uploaded successfully', 'success')
+        return redirect(url_for('library_category', category=category))
+
+@app.route("/download/<int:book_id>")
+@member_required
+def download_book(book_id):
+    """
+    Download a book file.
+    """
+    book = Book.query.get_or_404(book_id)
+    # Construct absolute path
+    file_path = os.path.join(app.static_folder, book.file_path)
+    if not os.path.exists(file_path):
+        flash('File not found', 'error')
+        return redirect(url_for('library_category', category=book.category))
+        
+    directory = os.path.dirname(file_path)
+    filename = os.path.basename(file_path)
+    
+    # Create response with proper headers for download
+    response = make_response(send_from_directory(directory, filename, as_attachment=True))
+    response.headers["Content-Disposition"] = f"attachment; filename*=UTF-8''{quote(book.filename)}"
+    return response
+
+
+@app.route("/library/book/<int:book_id>/toggle_public", methods=["POST"])
+@login_required
+def toggle_book_public(book_id):
+    """
+    Toggle book's public visibility (admin only).
+    """
+    if not current_user.is_admin():
+        abort(403)
+    
+    book = Book.query.get_or_404(book_id)
+    book.is_public = not book.is_public
+    db.session.commit()
+    
+    status = "public" if book.is_public else "hidden from public"
+    flash(f'Book "{book.title}" is now {status}', 'success')
+    return redirect(url_for('library_category', category=book.category))
+
+
 
 
 # --- Gallery Routes ---
