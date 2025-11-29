@@ -501,16 +501,44 @@ observations through photography.{% endblock %}
     if (allQuotes && allQuotes.length > 0) {
         initializeHeroQuotes();
 
-        // Set random quote for Ideas section
-        const ideasQuote = getRandomQuote();
+        // Set initial random quote for Ideas section
         const ideasQuoteEl = document.getElementById('random-idea-quote');
         const ideasAuthorEl = document.getElementById('random-idea-author');
+
         if (ideasQuoteEl && ideasAuthorEl) {
-            ideasQuoteEl.textContent = `"${ideasQuote.text}"`;
-            ideasAuthorEl.textContent = ideasQuote.author;
+            const initialQuote = getRandomQuote();
+            ideasQuoteEl.textContent = `"${initialQuote.text}"`;
+            ideasAuthorEl.textContent = initialQuote.author;
+
+            // Add fade transition CSS for Ideas quote
+            ideasQuoteEl.style.transition = 'opacity 0.5s ease-in-out';
+            ideasAuthorEl.style.transition = 'opacity 0.5s ease-in-out';
+
+            // Function to rotate Ideas section quote
+            function rotateIdeasQuote() {
+                // Fade out
+                ideasQuoteEl.style.opacity = 0;
+                ideasAuthorEl.style.opacity = 0;
+
+                setTimeout(() => {
+                    // Update content with new random quote
+                    const newQuote = getRandomQuote();
+                    ideasQuoteEl.textContent = `"${newQuote.text}"`;
+                    ideasAuthorEl.textContent = newQuote.author;
+
+                    // Fade in
+                    setTimeout(() => {
+                        ideasQuoteEl.style.opacity = 1;
+                        ideasAuthorEl.style.opacity = 1;
+                    }, 50);
+                }, 500);
+            }
+
+            // Start Ideas quote rotation every 7 seconds
+            setInterval(rotateIdeasQuote, 7000);
         }
 
-        // Start rotation every 5 seconds
+        // Start hero quotes rotation every 5 seconds
         setInterval(rotateHeroQuotes, 5000);
     }
 
