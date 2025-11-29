@@ -64,7 +64,8 @@
                     class="{% if request.endpoint and ('blog' in request.endpoint or request.endpoint in ['post', 'create', 'edit']) %}nav-active{% endif %}">Humanity</a>
                 <a href="{{ url_for('collections') }}"
                     class="{% if request.endpoint == 'collections' %}nav-active{% endif %}">Collections</a>
-                <a href="{{ url_for('index') }}#art">Ideas</a>
+                <a href="{{ url_for('ideas') }}"
+                    class="{% if request.endpoint == 'ideas' %}nav-active{% endif %}">Ideas</a>
                 <a href="{{ url_for('index') }}#ideas">Lab</a>
                 <a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}nav-active{% endif %}">About
                     Me</a>

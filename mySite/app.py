@@ -12,6 +12,7 @@ Author: K.
 """
 
 import os
+import json
 from flask import (
     Flask,
     render_template,
@@ -599,6 +600,41 @@ def about():
         Rendered about.html template
     """
     return render_template("about.html")
+
+
+@app.route("/ideas")
+def ideas():
+    """
+    Ideas page route.
+    Displays rotating quotes and downloadable books (for authorized users).
+    """
+    # Load rotating texts
+    texts_path = os.path.join(app.static_folder, 'rotating_texts.json')
+    quotes = []
+    try:
+        with open(texts_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            quotes = data.get('paragraphs', [])
+            # Take only 6 quotes as requested
+            quotes = data.get('paragraphs', [])
+    except Exception as e:
+        print(f"Error loading rotating texts: {e}")
+
+    # Load books
+    books_path = os.path.join(app.static_folder, 'books.json')
+    books = []
+    try:
+        with open(books_path, 'r', encoding='utf-8') as f:
+            books = json.load(f)
+    except Exception as e:
+        print(f"Error loading books: {e}")
+
+    # Check permission for downloads
+    can_download = False
+    if current_user.is_authenticated and (current_user.is_admin() or current_user.is_member()):
+        can_download = True
+
+    return render_template("ideas.html", quotes=quotes, books=books, can_download=can_download)
 
 
 # --- Gallery Routes ---
