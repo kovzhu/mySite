@@ -28,8 +28,8 @@ git push origin main
 Use SCP to upload the zip file to your server:
 
 ```bash
-# Replace YOUR_SERVER_IP with your actual server IP
-scp "mySite/static/library_books.zip" root@YOUR_SERVER_IP:/www/wwwroot/mySite/mySite/static/
+# Upload to your server
+scp "mySite/static/library_books.zip" root@YOUR_SERVER_IP:/root/projects/mySite/mySite/static/
 ```
 
 ### 3. SSH into Server and Pull Code
@@ -38,7 +38,7 @@ scp "mySite/static/library_books.zip" root@YOUR_SERVER_IP:/www/wwwroot/mySite/my
 ssh root@YOUR_SERVER_IP
 
 # Navigate to project directory
-cd /www/wwwroot/mySite
+cd /root/projects/mySite
 
 # Pull latest code from GitHub
 git pull origin main
@@ -107,7 +107,7 @@ chmod -R 755 library_books/
 ### Database Issues
 If books aren't in the database after migration:
 ```bash
-cd /www/wwwroot/mySite/mySite/scripts
+cd /root/projects/mySite/mySite/scripts
 python3 import_books.py
 ```
 Note: This requires the source books directory, which won't be on the server.
@@ -125,7 +125,7 @@ sqlite3 database.db ".dump book" > books_data.sql
 
 ### On Server (after pulling code):
 ```bash
-cd /www/wwwroot/mySite/mySite
+cd /root/projects/mySite/mySite
 sqlite3 database.db < books_data.sql
 ```
 
