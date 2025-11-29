@@ -64,3 +64,14 @@ mySite/static/library_books/
 # Zip files
 *.zip
 gallery_images.zip
+library_books_*.zip
+library_books_*.z01
+library_books_*.z02
+library_books_*.z03
+library_books_*.z04
+library_books_*.z05
+library_books_*.z06
+library_books_*.z07
+library_books_*.z08
+library_books_*.z09
+library_books_*.z10

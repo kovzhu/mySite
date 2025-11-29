@@ -602,12 +602,23 @@ def index():
     # Get 6 most recent blog posts for the humanity section
     recent_posts = Post.query.order_by(Post.created_at.desc()).limit(6).all()
     projects = Project.query.order_by(Project.year.desc()).all()
+    
+    # Load rotating texts for quotes section
+    texts_path = os.path.join(app.static_folder, 'rotating_texts.json')
+    quotes = []
+    try:
+        with open(texts_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            quotes = data.get('paragraphs', [])
+    except Exception as e:
+        print(f"Error loading rotating texts: {e}")
 
     return render_template(
         "index.html",
         recent_photos=recent_photos,
         recent_posts=recent_posts,
         projects=projects,
+        quotes=quotes,
     )
 
 

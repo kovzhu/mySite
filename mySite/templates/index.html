@@ -16,10 +16,20 @@ observations through photography.{% endblock %}
             <span class="name-part" id="typed-text"></span>
         </h1>
 
-        <p class="hero-text" id="hero-rotating-text">
-            Shall I compare thee to a summer's day? Thou art more lovely and more temperate: Rough winds do shake the
-            darling buds of May, And summer's lease hath all too short a date
-        </p>
+        <div class="hero-quotes-container">
+            <div class="hero-quote" id="hero-quote-1">
+                <p class="hero-text">Shall I compare thee to a summer's day? Thou art more lovely and more temperate: Rough winds do shake the darling buds of May, And summer's lease hath all too short a date</p>
+            </div>
+            <div class="hero-quote" id="hero-quote-2" style="display: none;">
+                <p class="hero-text"></p>
+            </div>
+            <div class="hero-quote" id="hero-quote-3" style="display: none;">
+                <p class="hero-text"></p>
+            </div>
+            <div class="hero-quote" id="hero-quote-4" style="display: none;">
+                <p class="hero-text"></p>
+            </div>
+        </div>
         <a href="{{ url_for('blog_index') }}" class="btn-consult">Explore what's in my brain</a>
     </div>
 
@@ -30,6 +40,7 @@ observations through photography.{% endblock %}
     <div class="grid-right-sidebar"></div>
 
 </div>
+
 
 <!-- Gallery Section -->
 <section id="gallery" class="section">
@@ -239,5 +250,98 @@ observations through photography.{% endblock %}
         document.getElementById('modalPhotoDate').textContent = date;
         modal.show();
     }
+
+    // Hero Quotes Rotation Functionality
+    const allQuotes = {{ quotes | tojson }};
+    const heroQuotes = [
+        document.getElementById('hero-quote-1'),
+        document.getElementById('hero-quote-2'),
+        document.getElementById('hero-quote-3'),
+        document.getElementById('hero-quote-4')
+    ];
+
+    function getRandomQuote() {
+        if (!allQuotes || allQuotes.length === 0) return { text: "No quotes available", author: "" };
+        return allQuotes[Math.floor(Math.random() * allQuotes.length)];
+    }
+
+    function initializeHeroQuotes() {
+        if (!allQuotes || allQuotes.length === 0) return;
+
+        // Initialize all quotes with random content
+        heroQuotes.forEach((quoteDiv, index) => {
+            const quote = getRandomQuote();
+            const textEl = quoteDiv.querySelector('.hero-text');
+            textEl.textContent = quote.text;
+            
+            // Start with first quote visible, others hidden
+            if (index === 0) {
+                quoteDiv.style.display = 'block';
+                textEl.style.opacity = 1;
+            } else {
+                quoteDiv.style.display = 'none';
+                textEl.style.opacity = 0;
+            }
+        });
+    }
+
+    function rotateHeroQuotes() {
+        if (!allQuotes || allQuotes.length === 0) return;
+
+        // Find current visible quote
+        let currentIndex = -1;
+        heroQuotes.forEach((quoteDiv, index) => {
+            if (quoteDiv.style.display !== 'none') {
+                currentIndex = index;
+            }
+        });
+
+        // Calculate next index
+        const nextIndex = (currentIndex + 1) % heroQuotes.length;
+
+        // Fade out current quote
+        const currentQuote = heroQuotes[currentIndex];
+        const currentText = currentQuote.querySelector('.hero-text');
+        currentText.style.opacity = 0;
+
+        setTimeout(() => {
+            // Hide current quote
+            currentQuote.style.display = 'none';
+            
+            // Show and fade in next quote
+            const nextQuote = heroQuotes[nextIndex];
+            const nextText = nextQuote.querySelector('.hero-text');
+            
+            // Update content with new random quote
+            const newQuote = getRandomQuote();
+            nextText.textContent = newQuote.text;
+            
+            nextQuote.style.display = 'block';
+            setTimeout(() => {
+                nextText.style.opacity = 1;
+            }, 50);
+        }, 500);
+    }
+
+    // Initialize and start rotation
+    if (allQuotes && allQuotes.length > 0) {
+        initializeHeroQuotes();
+        
+        // Start rotation every 5 seconds
+        setInterval(rotateHeroQuotes, 5000);
+    }
+
+    // Add CSS for smooth transitions
+    const style = document.createElement('style');
+    style.innerHTML = `
+        .hero-quote .hero-text {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .hero-quotes-container {
+            position: relative;
+            min-height: 80px;
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 {% endblock %}
