@@ -613,7 +613,8 @@ def index():
     recent_photos = Photo.query.order_by(Photo.year.desc(), Photo.filename.desc()).limit(6).all()
     # Get 6 most recent blog posts for the humanity section
     recent_posts = Post.query.order_by(Post.created_at.desc()).limit(6).all()
-    projects = Project.query.order_by(Project.year.desc()).all()
+    # Get 3 most recent lab projects
+    lab_projects = LabProject.query.order_by(LabProject.created_at.desc()).limit(3).all()
     
     # Load rotating texts for quotes section
     texts_path = os.path.join(app.static_folder, 'rotating_texts.json')
@@ -629,7 +630,7 @@ def index():
         "index.html",
         recent_photos=recent_photos,
         recent_posts=recent_posts,
-        projects=projects,
+        lab_projects=lab_projects,
         quotes=quotes,
     )
 
