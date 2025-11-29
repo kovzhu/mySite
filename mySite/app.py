@@ -425,6 +425,18 @@ class FragmentedQuotePhoto(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class LabProject(db.Model):
+    """
+    LabProject model for the Lab page.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    github_url = db.Column(db.String(200))
+    image_filename = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # --- Authentication Routes ---
 
 
@@ -661,6 +673,55 @@ def ideas():
         can_download = True
 
     return render_template("ideas.html", quotes=quotes, categories=categories, can_download=can_download)
+
+@app.route("/lab")
+def lab():
+    """Lab page showcasing Python projects and tools."""
+    projects = LabProject.query.order_by(LabProject.created_at.desc()).all()
+    return render_template("lab.html", projects=projects)
+
+@app.route("/lab/add", methods=["POST"])
+@admin_required
+def add_lab_project():
+    title = request.form.get("title")
+    description = request.form.get("description")
+    github_url = request.form.get("github_url")
+    
+    # Handle image upload
+    image_filename = None
+    if 'image' in request.files:
+        file = request.files['image']
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            # Save to static/lab/
+            lab_dir = os.path.join(app.static_folder, 'lab')
+            os.makedirs(lab_dir, exist_ok=True)
+            file.save(os.path.join(lab_dir, filename))
+            image_filename = f"lab/{filename}"
+    
+    # Use placeholder if no image
+    if not image_filename:
+         image_filename = "https://via.placeholder.com/400x200?text=" + quote(title)
+
+    new_project = LabProject(
+        title=title,
+        description=description,
+        github_url=github_url,
+        image_filename=image_filename
+    )
+    db.session.add(new_project)
+    db.session.commit()
+    flash("Project added successfully!", "success")
+    return redirect(url_for('lab'))
+
+@app.route("/lab/delete/<int:project_id>", methods=["POST"])
+@admin_required
+def delete_lab_project(project_id):
+    project = LabProject.query.get_or_404(project_id)
+    db.session.delete(project)
+    db.session.commit()
+    flash("Project deleted.", "success")
+    return redirect(url_for('lab'))
 
 
 # --- Library Routes ---
