@@ -1955,10 +1955,7 @@ app.config["BLOG_UPLOAD_FOLDER"] = BLOG_UPLOAD_FOLDER
 os.makedirs(BLOG_UPLOAD_FOLDER, exist_ok=True)
 
 
-# Add static route for gallery images
-@app.route("/static/gallery_images/<path:filename>")
-def serve_gallery_images(filename):
-    return send_from_directory(app.config["PHOTO_UPLOAD_FOLDER"], filename)
+
 
 
 @app.route("/sitemap.xml")

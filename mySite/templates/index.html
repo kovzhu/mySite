@@ -37,7 +37,6 @@ observations through photography.{% endblock %}
     <div class="image-area">
         <img src="{{ url_for('static', filename='personal_images/my_photo.png') }}" alt="My photo" class="img-fluid">
     </div>
-
     <div class="grid-right-sidebar"></div>
 
 </div>
@@ -50,7 +49,7 @@ observations through photography.{% endblock %}
         <div class="gallery-grid">
             {% for photo in recent_photos %}
             <div class="gallery-item"
-                onclick="openPhotoModal('{{ photo.filename }}', '{{ photo.title }}', '{{ photo.created_at.strftime('%b %d, %Y') }}')">
+                onclick="openPhotoModal('{{ photo.filename }}', {{ photo.title | tojson }}, '{{ photo.created_at.strftime('%b %d, %Y') }}')">
                 <img src="{{ url_for('static', filename='gallery_images/' + photo.filename) }}" alt="{{ photo.title }}">
                 <div class="gallery-overlay">
                     <div class="gallery-title">{{ photo.title }}</div>
@@ -420,7 +419,7 @@ observations through photography.{% endblock %}
     function openPhotoModal(filename, title, date) {
         const modal = new bootstrap.Modal(document.getElementById('photoModal'));
         document.getElementById('modalPhotoTitle').textContent = title;
-        document.getElementById('modalPhotoImg').src = "{{ url_for('static', filename='gallery_images/') }}" + filename;
+        document.getElementById('modalPhotoImg').src = "{{ url_for('static', filename='gallery_images') }}/" + filename;
         document.getElementById('modalPhotoDate').textContent = date;
         modal.show();
     }
