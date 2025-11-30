@@ -1,0 +1,274 @@
+<!-- Shared Photo Modal Template -->
+<!-- Styles for the modal -->
+<style>
+    /* --- Modal (Single Page View) --- */
+    .universal-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.98);
+        overflow-y: auto;
+    }
+
+    .universal-modal-content-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        position: relative;
+        min-height: 100%;
+        justify-content: center;
+    }
+
+    .universal-close-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        font-size: 1.5rem;
+        cursor: pointer;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        line-height: 1;
+    }
+
+    .universal-close-btn:hover {
+        background: rgba(0, 0, 0, 1);
+        transform: scale(1.1);
+    }
+
+    /* --- Navigation Buttons --- */
+    .universal-nav-btn {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        border: none;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        padding-bottom: 5px;
+        /* Visual alignment fix */
+    }
+
+    .universal-nav-btn:hover {
+        background: rgba(0, 0, 0, 0.9);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .universal-nav-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: translateY(-50%);
+    }
+
+    .universal-nav-btn-prev {
+        left: 20px;
+    }
+
+    .universal-nav-btn-next {
+        right: 20px;
+    }
+
+    .universal-modal-img {
+        width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        background-color: transparent;
+        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .universal-modal-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+
+    .universal-modal-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin: 0 0 5px 0;
+        color: #333;
+    }
+
+    .universal-modal-date {
+        color: #888;
+        font-size: 0.9rem;
+    }
+
+    .universal-modal-description {
+        max-width: 800px;
+        color: #555;
+        line-height: 1.6;
+        margin-top: 15px;
+        font-size: 1rem;
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .universal-nav-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+        }
+
+        .universal-close-btn {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
+            top: 10px;
+            right: 10px;
+        }
+
+        .universal-modal-title {
+            font-size: 1.4rem;
+        }
+    }
+</style>
+
+<!-- Modal HTML Structure -->
+<div id="universalPhotoModal" class="universal-modal">
+    <div class="universal-modal-content-wrapper">
+        <button class="universal-close-btn" onclick="closeUniversalModal()" title="Close">&times;</button>
+
+        <!-- Navigation Buttons -->
+        <button class="universal-nav-btn universal-nav-btn-prev" id="universalPrevBtn"
+            onclick="navigateUniversalPhoto(-1)" title="Previous">&lsaquo;</button>
+        <button class="universal-nav-btn universal-nav-btn-next" id="universalNextBtn"
+            onclick="navigateUniversalPhoto(1)" title="Next">&rsaquo;</button>
+
+        <img id="universalModalImg" class="universal-modal-img" src="" alt="Full size photo">
+
+        <div class="universal-modal-details">
+            <div style="flex: 1;">
+                <h2 id="universalModalTitle" class="universal-modal-title"></h2>
+                <div id="universalModalDate" class="universal-modal-date"></div>
+                <div id="universalModalDescription" class="universal-modal-description" style="display: none;"></div>
+            </div>
+
+            <!-- Optional: Container for extra actions like Delete/Like if needed -->
+            <div id="universalModalActions"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Logic -->
+<script>
+    const universalModal = document.getElementById("universalPhotoModal");
+    const universalModalImg = document.getElementById("universalModalImg");
+    const universalModalTitle = document.getElementById("universalModalTitle");
+    const universalModalDate = document.getElementById("universalModalDate");
+    const universalModalDescription = document.getElementById("universalModalDescription");
+    const universalPrevBtn = document.getElementById("universalPrevBtn");
+    const universalNextBtn = document.getElementById("universalNextBtn");
+
+    let currentUniversalIndex = 0;
+    let galleryItems = [];
+
+    /**
+     * Opens the modal with the clicked item.
+     * @param {HTMLElement} element - The clicked element (must have data attributes)
+     * @param {string} selector - CSS selector to find all related items for navigation
+     */
+    function openUniversalModal(element, selector = '.js-gallery-item') {
+        // Find all items in the current gallery context
+        galleryItems = Array.from(document.querySelectorAll(selector));
+        currentUniversalIndex = galleryItems.indexOf(element);
+
+        if (currentUniversalIndex === -1) {
+            console.error("Clicked element not found in gallery items selector:", selector);
+            return;
+        }
+
+        loadUniversalPhoto(currentUniversalIndex);
+
+        universalModal.style.display = "block";
+        document.body.style.overflow = "hidden"; // Prevent background scrolling
+
+        updateUniversalNavButtons();
+    }
+
+    function loadUniversalPhoto(index) {
+        const item = galleryItems[index];
+
+        // Extract data from attributes
+        const src = item.getAttribute('data-full-image');
+        const title = item.getAttribute('data-title');
+        const date = item.getAttribute('data-date');
+        const description = item.getAttribute('data-description');
+
+        // Update Modal Content
+        universalModalImg.src = src;
+        universalModalTitle.textContent = title || '';
+        universalModalDate.textContent = date || '';
+
+        if (description && description.trim() !== '') {
+            universalModalDescription.textContent = description;
+            universalModalDescription.style.display = 'block';
+        } else {
+            universalModalDescription.style.display = 'none';
+        }
+    }
+
+    function navigateUniversalPhoto(direction) {
+        currentUniversalIndex += direction;
+
+        // Boundary checks
+        if (currentUniversalIndex < 0) currentUniversalIndex = 0;
+        if (currentUniversalIndex >= galleryItems.length) currentUniversalIndex = galleryItems.length - 1;
+
+        loadUniversalPhoto(currentUniversalIndex);
+        updateUniversalNavButtons();
+    }
+
+    function updateUniversalNavButtons() {
+        universalPrevBtn.disabled = (currentUniversalIndex === 0);
+        universalNextBtn.disabled = (currentUniversalIndex === galleryItems.length - 1);
+    }
+
+    function closeUniversalModal() {
+        universalModal.style.display = "none";
+        document.body.style.overflow = "auto"; // Restore scrolling
+    }
+
+    // Close on outside click
+    window.addEventListener('click', function (event) {
+        if (event.target === universalModal) {
+            closeUniversalModal();
+        }
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function (event) {
+        if (universalModal.style.display === "block") {
+            if (event.key === "ArrowLeft") navigateUniversalPhoto(-1);
+            if (event.key === "ArrowRight") navigateUniversalPhoto(1);
+            if (event.key === "Escape") closeUniversalModal();
+        }
+    });
+</script>

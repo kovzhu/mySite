@@ -129,141 +129,6 @@
             gap: 15px;
         }
     }
-
-    /* --- Modal (Single Page View) --- */
-    .modal {
-        display: none;
-        /* Hidden by default */
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #fff;
-        overflow-y: auto;
-    }
-
-    .modal-content-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .close-btn {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        font-size: 1rem;
-        cursor: pointer;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        font-weight: bold;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .close-btn:hover {
-        background: rgba(0, 0, 0, 1);
-        transform: scale(1.1);
-    }
-
-    /* --- Navigation Buttons --- */
-    .nav-btn {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10000;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        border: none;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .nav-btn:hover {
-        background: rgba(0, 0, 0, 0.9);
-        transform: translateY(-50%) scale(1.1);
-    }
-
-    .nav-btn:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
-
-    .nav-btn-prev {
-        left: 20px;
-    }
-
-    .nav-btn-next {
-        right: 20px;
-    }
-
-    .modal-img {
-        width: 100%;
-        max-height: 80vh;
-        object-fit: contain;
-        background-color: #f9f9f9;
-    }
-
-    .modal-details {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-
-    .modal-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0;
-    }
-
-    .modal-date {
-        color: #888;
-        margin-top: 5px;
-    }
-
-    /* --- Delete Button --- */
-    .delete-btn {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(5px);
-        border: none;
-        color: white;
-        padding: 8px 12px;
-        border-radius: 20px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-    }
-
-    .delete-btn:hover {
-        background: white;
-        color: #dc3545;
-    }
 </style>
 {% endblock %}
 
@@ -288,11 +153,12 @@
     <div class="books-grid">
         {% for book in pagination.items %}
         <!-- Book Item -->
-        <div class="book-card" onclick="openModal(this)"
+        <div class="book-card js-gallery-item" onclick="openUniversalModal(this)"
             data-full-image="{{ url_for('static', filename='book_photos/' + book.filename) }}"
-            data-description="{{ book.description if book.description else '' }}"
-            data-book-id="{{ book.id }}">
-            <img src="{{ url_for('static', filename='book_photos/' + book.filename) }}" alt="{{ book.title }}" loading="lazy">
+            data-title="{{ book.title }}" data-date="{{ book.created_at.strftime('%b %d, %Y') }}"
+            data-description="{{ book.description if book.description else '' }}" data-book-id="{{ book.id }}">
+            <img src="{{ url_for('static', filename='book_photos/' + book.filename) }}" alt="{{ book.title }}"
+                loading="lazy">
             <div class="book-overlay">
                 <div class="text-content">
                     <div class="book-title">{{ book.title }}</div>
@@ -301,8 +167,7 @@
                 <!-- Delete Button -->
                 {% if current_user.is_authenticated %}
                 <form action="{{ url_for('delete_book_photo', book_id=book.id) }}" method="POST"
-                    style="display: inline;"
-                    onsubmit="return confirm('Are you sure you want to delete this book?')">
+                    style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this book?')">
                     <button type="submit" class="delete-btn" onclick="event.stopPropagation()">
                         <span>🗑️</span> Delete
                     </button>
@@ -339,143 +204,11 @@
 </div>
 
 <!-- THE FULL PAGE MODAL TEMPLATE -->
-<div id="photoModal" class="modal">
-    <div class="modal-content-wrapper">
-        <button class="close-btn" onclick="closeModal()" title="Close">&times;</button>
-
-        <!-- Navigation Buttons -->
-        <button class="nav-btn nav-btn-prev" id="prevBtn" onclick="navigatePhoto(-1)" title="Previous">&lsaquo;</button>
-        <button class="nav-btn nav-btn-next" id="nextBtn" onclick="navigatePhoto(1)" title="Next">&rsaquo;</button>
-
-        <img id="modalImg" class="modal-img" src="" alt="">
-        <div class="modal-details">
-            <div>
-                <h2 id="modalTitle" class="modal-title">Title</h2>
-                <div id="modalDate" class="modal-date">Date</div>
-            </div>
-            {% if current_user.is_authenticated %}
-            <div class="mt-3">
-                <form id="deleteForm" method="POST" action="" style="display: inline;">
-                    <button type="submit" class="btn btn-danger btn-sm"
-                        onclick="return confirm('Are you sure you want to delete this book?')">Delete Book</button>
-                </form>
-            </div>
-            {% endif %}
-        </div>
-        <div id="modalDescription" style="max-width: 600px; color: #666; line-height: 1.6; display: none;">
-            <p id="modalDescriptionText"></p>
-        </div>
-    </div>
-</div>
+{% include 'includes/photo_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // --- Logic for the Full Page Modal ---
-    const modal = document.getElementById("photoModal");
-    const modalImg = document.getElementById("modalImg");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalDate = document.getElementById("modalDate");
-    const modalDescriptionText = document.getElementById("modalDescriptionText");
-    const modalDescription = document.getElementById("modalDescription");
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const deleteForm = document.getElementById("deleteForm");
 
-    let currentPhotoIndex = 0;
-    let allPhotoCards = [];
-
-    function openModal(card) {
-        // Get all photo cards for navigation
-        allPhotoCards = Array.from(document.querySelectorAll('.book-card'));
-        currentPhotoIndex = allPhotoCards.indexOf(card);
-
-        // Load the photo
-        loadPhotoAtIndex(currentPhotoIndex);
-
-        // Show modal
-        modal.style.display = "block";
-        // Disable background scrolling
-        document.body.style.overflow = "hidden";
-
-        // Update navigation buttons
-        updateNavButtons();
-    }
-
-    function loadPhotoAtIndex(index) {
-        const card = allPhotoCards[index];
-        const fullImageSrc = card.getAttribute('data-full-image');
-        const title = card.querySelector('.book-title').innerText;
-        const date = card.querySelector('.book-description').innerText;
-        const description = card.getAttribute('data-description');
-        const bookId = card.getAttribute('data-book-id');
-
-        // Populate modal
-        modalImg.src = fullImageSrc;
-        modalTitle.innerText = title;
-        modalDate.innerText = date;
-
-        // Update delete form action
-        if (deleteForm) {
-            deleteForm.action = "{{ url_for('delete_book_photo', book_id=0) }}".replace('0', bookId);
-        }
-
-        // Show description only if it exists
-        if (description && description.trim() !== '') {
-            modalDescriptionText.innerText = description;
-            modalDescription.style.display = 'block';
-        } else {
-            modalDescription.style.display = 'none';
-        }
-    }
-
-    function navigatePhoto(direction) {
-        currentPhotoIndex += direction;
-
-        // Ensure we stay within bounds
-        if (currentPhotoIndex < 0) currentPhotoIndex = 0;
-        if (currentPhotoIndex >= allPhotoCards.length) currentPhotoIndex = allPhotoCards.length - 1;
-
-        loadPhotoAtIndex(currentPhotoIndex);
-        updateNavButtons();
-    }
-
-    function updateNavButtons() {
-        // Disable prev button if at first photo
-        prevBtn.disabled = (currentPhotoIndex === 0);
-        // Disable next button if at last photo
-        nextBtn.disabled = (currentPhotoIndex === allPhotoCards.length - 1);
-    }
-
-    function closeModal() {
-        modal.style.display = "none";
-        // Re-enable background scrolling
-        document.body.style.overflow = "auto";
-    }
-
-    // Close modal if clicking outside the image content
-    window.onclick = function (event) {
-        if (event.target == modal) {
-            closeModal();
-        }
-    }
-
-    // Ensure body overflow is reset when leaving the page
-    window.addEventListener('beforeunload', () => {
-        document.body.style.overflow = 'auto';
-    });
-
-    // --- Keyboard Navigation ---
-    document.addEventListener('keydown', function (event) {
-        if (modal.style.display === "block") {
-            if (event.key === "ArrowLeft") {
-                navigatePhoto(-1);
-            } else if (event.key === "ArrowRight") {
-                navigatePhoto(1);
-            } else if (event.key === "Escape") {
-                closeModal();
-            }
-        }
-    });
 </script>
 {% endblock %}

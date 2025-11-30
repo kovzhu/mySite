@@ -278,119 +278,7 @@
         color: #ff4757;
     }
 
-    /* --- Modal (Single Page View) --- */
-    .modal {
-        display: none;
-        /* Hidden by default */
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: #fff;
-        overflow-y: auto;
-    }
 
-    .modal-content-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 40px 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 30px;
-    }
-
-    .close-btn {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-        font-size: 1rem;
-        cursor: pointer;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        font-weight: bold;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .close-btn:hover {
-        background: rgba(0, 0, 0, 1);
-        transform: scale(1.1);
-    }
-
-    /* --- Navigation Buttons --- */
-    .nav-btn {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10000;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        border: none;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-
-    .nav-btn:hover {
-        background: rgba(0, 0, 0, 0.9);
-        transform: translateY(-50%) scale(1.1);
-    }
-
-    .nav-btn:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
-
-    .nav-btn-prev {
-        left: 20px;
-    }
-
-    .nav-btn-next {
-        right: 20px;
-    }
-
-    .modal-img {
-        width: 100%;
-        max-height: 80vh;
-        object-fit: contain;
-        background-color: #f9f9f9;
-    }
-
-    .modal-details {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-    }
-
-    .modal-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin: 0;
-    }
-
-    .modal-date {
-        color: #888;
-        margin-top: 5px;
-    }
 
     /* --- Flash Messages --- */
     .flash-messages {
@@ -576,8 +464,9 @@
     <div class="photo-grid">
         {% for photo in pagination.items %}
         <!-- Photo Item -->
-        <div class="photo-card" onclick="openModal(this)"
+        <div class="photo-card js-gallery-item" onclick="openUniversalModal(this)"
             data-full-image="{{ url_for('static', filename='gallery_images/' + photo.filename) }}"
+            data-title="{{ photo.title }}" data-date="{{ photo.created_at.strftime('%b %d, %Y') }}"
             data-description="{{ photo.description if photo.description else '' }}">
             {% set thumbnail_path = 'gallery_images/thumbnails/' + photo.filename %}
             <img src="{{ url_for('static', filename=thumbnail_path) }}" alt="{{ photo.title }}" loading="lazy">
@@ -637,31 +526,7 @@
 </div>
 
 <!-- THE FULL PAGE MODAL TEMPLATE -->
-<div id="photoModal" class="modal">
-    <div class="modal-content-wrapper">
-        <button class="close-btn" onclick="closeModal()" title="Close">&times;</button>
-
-        <!-- Navigation Buttons -->
-        <button class="nav-btn nav-btn-prev" id="prevBtn" onclick="navigatePhoto(-1)" title="Previous">&lsaquo;</button>
-        <button class="nav-btn nav-btn-next" id="nextBtn" onclick="navigatePhoto(1)" title="Next">&rsaquo;</button>
-
-        <img id="modalImg" class="modal-img" src="" alt="">
-        <div class="modal-details">
-            <div>
-                <h2 id="modalTitle" class="modal-title">Title</h2>
-                <div id="modalDate" class="modal-date">Date</div>
-            </div>
-            <!-- We duplicate the like button for the detailed view -->
-            <button class="heart-btn" style="background:#f4f4f4; color:#333; font-size:1.1rem; padding: 12px 20px;">
-                <span style="color:red">♥</span> Supported by <span id="modalCount"
-                    style="margin-left:5px; font-weight:bold;">0</span> people
-            </button>
-        </div>
-        <div id="modalDescription" style="max-width: 600px; color: #666; line-height: 1.6; display: none;">
-            <p id="modalDescriptionText"></p>
-        </div>
-    </div>
-</div>
+{% include 'includes/photo_modal.html' %}
 {% endblock %}
 
 {% block scripts %}
@@ -702,109 +567,7 @@
         countSpan.innerText = count;
     }
 
-    // --- Logic for the Full Page Modal ---
-    const modal = document.getElementById("photoModal");
-    const modalImg = document.getElementById("modalImg");
-    const modalTitle = document.getElementById("modalTitle");
-    const modalDate = document.getElementById("modalDate");
-    const modalCount = document.getElementById("modalCount");
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
 
-    let currentPhotoIndex = 0;
-    let allPhotoCards = [];
-
-    function openModal(card) {
-        // Get all photo cards for navigation
-        allPhotoCards = Array.from(document.querySelectorAll('.photo-card'));
-        currentPhotoIndex = allPhotoCards.indexOf(card);
-
-        // Load the photo
-        loadPhotoAtIndex(currentPhotoIndex);
-
-        // Show modal
-        modal.style.display = "block";
-        // Disable background scrolling
-        document.body.style.overflow = "hidden";
-
-        // Update navigation buttons
-        updateNavButtons();
-    }
-
-    function loadPhotoAtIndex(index) {
-        const card = allPhotoCards[index];
-        const fullImageSrc = card.getAttribute('data-full-image');
-        const title = card.querySelector('.photo-title').innerText;
-        const date = card.querySelector('.photo-date').innerText;
-        const count = card.querySelector('.count').innerText;
-        const description = card.getAttribute('data-description');
-
-        // Populate modal
-        modalImg.src = fullImageSrc;
-        modalTitle.innerText = title;
-        modalDate.innerText = date;
-        modalCount.innerText = count;
-
-        // Show description only if it exists
-        const modalDescription = document.getElementById('modalDescription');
-        const modalDescriptionText = document.getElementById('modalDescriptionText');
-        if (description && description.trim() !== '') {
-            modalDescriptionText.innerText = description;
-            modalDescription.style.display = 'block';
-        } else {
-            modalDescription.style.display = 'none';
-        }
-    }
-
-    function navigatePhoto(direction) {
-        currentPhotoIndex += direction;
-
-        // Ensure we stay within bounds
-        if (currentPhotoIndex < 0) currentPhotoIndex = 0;
-        if (currentPhotoIndex >= allPhotoCards.length) currentPhotoIndex = allPhotoCards.length - 1;
-
-        loadPhotoAtIndex(currentPhotoIndex);
-        updateNavButtons();
-    }
-
-    function updateNavButtons() {
-        // Disable prev button if at first photo
-        prevBtn.disabled = (currentPhotoIndex === 0);
-        // Disable next button if at last photo
-        nextBtn.disabled = (currentPhotoIndex === allPhotoCards.length - 1);
-    }
-
-    function closeModal() {
-        modal.style.display = "none";
-        // Re-enable background scrolling
-        document.body.style.overflow = "auto";
-    }
-
-    // Close modal if clicking outside the image content
-    window.onclick = function (event) {
-        if (event.target == modal) {
-            closeModal();
-        }
-    }
-
-
-    // Ensure body overflow is reset when leaving the page
-    window.addEventListener('beforeunload', () => {
-        document.body.style.overflow = 'auto';
-    });
-
-    // --- Keyboard Navigation ---
-    document.addEventListener('keydown', function (event) {
-        if (modal.style.display === "block") {
-            if (event.key === "ArrowLeft") {
-                navigatePhoto(-1);
-            } else if (event.key === "ArrowRight") {
-                navigatePhoto(1);
-            } else if (event.key === "Escape") {
-                closeModal();
-            }
-        }
-    });
 
 </script>
 {% endblock %}
