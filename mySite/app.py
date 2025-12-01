@@ -188,6 +188,30 @@ class Like(db.Model):
     user = db.relationship('User', backref=db.backref('likes', lazy=True))
 
 
+class PhotoComment(db.Model):
+    """
+    PhotoComment model for photo gallery comments.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'), nullable=False)
+    
+    user = db.relationship('User', backref=db.backref('photo_comments', lazy=True))
+
+
+class PhotoLike(db.Model):
+    """
+    PhotoLike model for photo gallery likes.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    photo_id = db.Column(db.Integer, db.ForeignKey('photo.id'), nullable=False)
+    
+    user = db.relationship('User', backref=db.backref('photo_likes', lazy=True))
+
+
 class Message(db.Model):
     """
     Message model for contact form submissions.
@@ -286,6 +310,10 @@ class Photo(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     month = db.Column(db.String(20))  # e.g., "nov23", "oct23"
     year = db.Column(db.Integer, default=datetime.now().year)
+    
+    comments = db.relationship('PhotoComment', backref='photo', lazy=True, cascade="all, delete-orphan")
+    likes = db.relationship('PhotoLike', backref='photo', lazy=True, cascade="all, delete-orphan")
+
 
 
 class GuitarVideo(db.Model):
@@ -749,7 +777,7 @@ def library_category(category):
     if not current_user.is_authenticated or (current_user.role == 'reader'):
         query = query.filter_by(is_public=True)
     
-    books = query.order_by(Book.title).all()
+    books = query.order_by(Book.upload_date.desc()).all()
     return render_template("library/category.html", category=category, books=books)
 
 @app.route("/library/<category>/upload", methods=["POST"])
@@ -885,6 +913,62 @@ def gallery():
     )
 
 
+# --- Photo Comment & Like Routes ---
+
+@app.route("/photos/<int:photo_id>/comment", methods=["POST"])
+@login_required
+def add_photo_comment(photo_id):
+    """Add a comment to a photo."""
+    photo = Photo.query.get_or_404(photo_id)
+    content = request.form.get("content")
+    
+    if not content:
+        flash("Comment cannot be empty.", "error")
+        return redirect(url_for("gallery"))
+        
+    comment = PhotoComment(content=content, user_id=current_user.id, photo_id=photo_id)
+    db.session.add(comment)
+    db.session.commit()
+    
+    flash("Comment added!", "success")
+    return redirect(url_for("gallery"))
+
+@app.route("/photo-comments/<int:comment_id>/delete", methods=["POST"])
+@login_required
+def delete_photo_comment(comment_id):
+    """Delete a photo comment."""
+    comment = PhotoComment.query.get_or_404(comment_id)
+    
+    # Allow deletion if user is admin or the comment author
+    if not current_user.is_admin() and current_user.id != comment.user_id:
+        abort(403)
+        
+    db.session.delete(comment)
+    db.session.commit()
+    
+    flash("Comment deleted.", "info")
+    return redirect(url_for("gallery"))
+
+@app.route("/photos/<int:photo_id>/like", methods=["POST"])
+@login_required
+def like_photo(photo_id):
+    """Toggle like on a photo."""
+    photo = Photo.query.get_or_404(photo_id)
+    like = PhotoLike.query.filter_by(user_id=current_user.id, photo_id=photo_id).first()
+    
+    if like:
+        db.session.delete(like)
+        db.session.commit()
+        flash("Unliked.", "info")
+    else:
+        like = PhotoLike(user_id=current_user.id, photo_id=photo_id)
+        db.session.add(like)
+        db.session.commit()
+        flash("Liked!", "success")
+        
+    return redirect(url_for("gallery"))
+
+
 # --- Collections Routes ---
 
 
@@ -1015,7 +1099,7 @@ def guitar_collection():
 
 
 @app.route("/collections/guitar/upload-video", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_guitar_video():
     """
     Upload a guitar video.
@@ -1051,7 +1135,7 @@ def upload_guitar_video():
 
 
 @app.route("/collections/guitar/upload-photo", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_guitar_photo():
     """
     Upload a guitar photo.
@@ -1139,7 +1223,7 @@ def videos_collection():
 
 
 @app.route("/collections/videos/upload", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_collection_video():
     """
     Upload a video to the Videos collection.
@@ -1213,7 +1297,7 @@ def books_collection():
 
 
 @app.route("/collections/books/upload", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_book_photo():
     """
     Upload a book photo.
@@ -1287,7 +1371,7 @@ def exercises_collection():
 
 
 @app.route("/collections/exercises/upload", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_exercise_photo():
     """
     Upload an exercise photo.
@@ -1355,7 +1439,7 @@ def reading_quotes_collection():
 
 
 @app.route("/collections/reading-quotes/upload", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_reading_quote_photo():
     """
     Upload a reading quote photo.
@@ -1423,7 +1507,7 @@ def intellectual_collection():
 
 
 @app.route("/collections/intellectual-masturbation/upload", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_intellectual_photo():
     """
     Upload an intellectual masturbation photo.
@@ -1491,7 +1575,7 @@ def fragmented_quotes_collection():
 
 
 @app.route("/collections/fragmented-quotes/upload", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_fragmented_quote_photo():
     """
     Upload a fragmented quote photo.
@@ -1582,7 +1666,7 @@ def get_media_type(filename):
 
 
 @app.route("/create", methods=["GET", "POST"])
-@login_required
+@member_required
 def create():
     """
     Create a new blog post.
@@ -1649,7 +1733,7 @@ def post(post_id):
 
 
 @app.route("/<int:post_id>/edit", methods=["GET", "POST"])
-@login_required
+@member_required
 def edit(post_id):
     """
     Edit an existing blog post.
@@ -1704,8 +1788,8 @@ def edit(post_id):
     return render_template("blogs/edit.html", post=post)
 
 
-@app.route("/<int:post_id>/delete", methods=["POST"])
-@login_required
+@app.route("/delete/<int:post_id>", methods=["POST"])
+@member_required
 def delete(post_id):
     """
     Delete a blog post.
@@ -1725,7 +1809,7 @@ def delete(post_id):
 
 
 @app.route("/upload_image", methods=["POST"])
-@login_required
+@member_required
 def upload_image():
     """
     Handle image uploads from TinyMCE editor.
@@ -1747,7 +1831,7 @@ def upload_image():
 # --- Comment & Like Routes ---
 
 @app.route("/posts/<int:post_id>/comment", methods=["POST"])
-@member_required
+@login_required
 def add_comment(post_id):
     post = Post.query.get_or_404(post_id)
     content = request.form.get("content")
@@ -1780,7 +1864,7 @@ def delete_comment(comment_id):
     return redirect(url_for("post", post_id=post_id))
 
 @app.route("/posts/<int:post_id>/like", methods=["POST"])
-@member_required
+@login_required
 def like_post(post_id):
     post = Post.query.get_or_404(post_id)
     like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
@@ -1884,7 +1968,7 @@ def allowed_file(filename):
 
 
 @app.route("/add_project", methods=["GET", "POST"])
-@login_required
+@member_required
 def add_project():
     """
     Add a new project to the portfolio.
@@ -1987,7 +2071,7 @@ def robots():
 
 
 @app.route("/upload_photo", methods=["GET", "POST"])
-@login_required
+@member_required
 def upload_photo():
     """
     Handle photo uploads for the gallery.

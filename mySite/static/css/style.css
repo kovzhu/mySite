@@ -464,7 +464,16 @@ a:hover {
     }
 
     .nav-icons {
-        display: none;
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .nav-icons a {
+        margin: 0 10px !important;
     }
 
     /* Content on top of background */
@@ -631,6 +640,7 @@ a:hover {
         max-width: 200px;
     }
 }
+
 /* Utility Classes */
 .hover-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
