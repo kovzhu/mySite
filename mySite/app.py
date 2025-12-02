@@ -393,8 +393,23 @@ class Book(db.Model):
     is_public = db.Column(db.Boolean, default=True)  # Whether the book is visible to public/readers
     upload_date = db.Column(db.DateTime, default=datetime.utcnow)
     
+    
     def __repr__(self):
         return f'<Book {self.title}>'
+
+
+class CategoryIcon(db.Model):
+    """
+    CategoryIcon model representing library categories with custom icons.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    icon = db.Column(db.String(10), default='📚')  # Emoji or icon character
+    display_order = db.Column(db.Integer, default=0)  # For custom sorting
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f'<CategoryIcon {self.name}>'
 
 
 
@@ -692,9 +707,8 @@ def ideas():
     except Exception as e:
         print(f"Error loading rotating texts: {e}")
 
-    # Fetch categories for the Library section
-    categories = db.session.query(Book.category).distinct().all()
-    categories = sorted([c[0] for c in categories])
+    # Fetch categories for the Library section from CategoryIcon model
+    categories = CategoryIcon.query.order_by(CategoryIcon.display_order, CategoryIcon.name).all()
 
     # Check permission for downloads
     can_download = False
@@ -760,9 +774,8 @@ def library_index():
     """
     Library landing page showing book categories.
     """
-    # Get distinct categories
-    categories = db.session.query(Book.category).distinct().all()
-    categories = sorted([c[0] for c in categories])
+    # Get categories from CategoryIcon model
+    categories = CategoryIcon.query.order_by(CategoryIcon.display_order, CategoryIcon.name).all()
     
     return render_template("library/index.html", categories=categories)
 
@@ -868,6 +881,144 @@ def toggle_book_public(book_id):
     flash(f'Book "{book.title}" is now {status}', 'success')
     return redirect(url_for('library_category', category=book.category))
 
+
+# --- Library Category Management Routes (Admin Only) ---
+
+@app.route("/admin/library/categories")
+@login_required
+def manage_categories():
+    """
+    Admin page for managing library categories.
+    """
+    if not current_user.is_admin():
+        abort(403)
+    
+    categories = CategoryIcon.query.order_by(CategoryIcon.display_order, CategoryIcon.name).all()
+    
+    # Get book counts for each category
+    category_book_counts = {}
+    for category in categories:
+        count = Book.query.filter_by(category=category.name).count()
+        category_book_counts[category.name] = count
+    
+    return render_template("library/manage_categories.html", categories=categories, category_book_counts=category_book_counts)
+
+@app.route("/admin/library/category/add", methods=["POST"])
+@login_required
+def add_category():
+    """
+    Add a new library category.
+    """
+    if not current_user.is_admin():
+        abort(403)
+    
+    name = request.form.get("name", "").strip()
+    icon = request.form.get("icon", "📚").strip()
+    
+    if not name:
+        flash("Category name is required", "error")
+        return redirect(url_for("manage_categories"))
+    
+    # Check if category already exists
+    existing = CategoryIcon.query.filter_by(name=name).first()
+    if existing:
+        flash(f'Category "{name}" already exists', "error")
+        return redirect(url_for("manage_categories"))
+    
+    # Get max display_order and increment
+    max_order = db.session.query(db.func.max(CategoryIcon.display_order)).scalar() or 0
+    
+    new_category = CategoryIcon(
+        name=name,
+        icon=icon if icon else "📚",
+        display_order=max_order + 1
+    )
+    db.session.add(new_category)
+    db.session.commit()
+    
+    flash(f'Category "{name}" added successfully', "success")
+    return redirect(url_for("manage_categories"))
+
+@app.route("/admin/library/category/<int:category_id>/rename", methods=["POST"])
+@login_required
+def rename_category(category_id):
+    """
+    Rename an existing library category.
+    """
+    if not current_user.is_admin():
+        abort(403)
+    
+    category = CategoryIcon.query.get_or_404(category_id)
+    new_name = request.form.get("new_name", "").strip()
+    
+    if not new_name:
+        flash("New category name is required", "error")
+        return redirect(url_for("manage_categories"))
+    
+    # Check if new name already exists
+    existing = CategoryIcon.query.filter_by(name=new_name).first()
+    if existing and existing.id != category_id:
+        flash(f'Category "{new_name}" already exists', "error")
+        return redirect(url_for("manage_categories"))
+    
+    old_name = category.name
+    
+    # Update all books in this category
+    books = Book.query.filter_by(category=old_name).all()
+    for book in books:
+        book.category = new_name
+    
+    # Update category name
+    category.name = new_name
+    db.session.commit()
+    
+    flash(f'Category "{old_name}" renamed to "{new_name}"', "success")
+    return redirect(url_for("manage_categories"))
+
+@app.route("/admin/library/category/<int:category_id>/delete", methods=["POST"])
+@login_required
+def delete_category(category_id):
+    """
+    Delete a library category (only if no books exist in it).
+    """
+    if not current_user.is_admin():
+        abort(403)
+    
+    category = CategoryIcon.query.get_or_404(category_id)
+    
+    # Check if any books exist in this category
+    book_count = Book.query.filter_by(category=category.name).count()
+    if book_count > 0:
+        flash(f'Cannot delete category "{category.name}" - it contains {book_count} book(s). Please reassign or delete the books first.', "error")
+        return redirect(url_for("manage_categories"))
+    
+    db.session.delete(category)
+    db.session.commit()
+    
+    flash(f'Category "{category.name}" deleted successfully', "success")
+    return redirect(url_for("manage_categories"))
+
+@app.route("/admin/library/category/<int:category_id>/update_icon", methods=["POST"])
+@login_required
+def update_category_icon(category_id):
+    """
+    Update a category's icon.
+    """
+    if not current_user.is_admin():
+        abort(403)
+    
+    category = CategoryIcon.query.get_or_404(category_id)
+    new_icon = request.form.get("icon", "").strip()
+    
+    if not new_icon:
+        flash("Icon is required", "error")
+        return redirect(url_for("manage_categories"))
+    
+    category.icon = new_icon
+    db.session.commit()
+    
+    flash(f'Icon for "{category.name}" updated successfully', "success")
+    return redirect(url_for("manage_categories"))
 
 
 
