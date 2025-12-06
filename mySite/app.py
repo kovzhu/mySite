@@ -728,6 +728,11 @@ def lab_math_games():
     """Math Games AI Lab page."""
     return render_template("lab_pages/math_games.html")
 
+@app.route("/lab/cc-game")
+def lab_cc_game():
+    """CC Game AI Lab page."""
+    return render_template("lab_pages/cc-game/index.html")
+
 @app.route("/lab/add", methods=["POST"])
 @admin_required
 def add_lab_project():
