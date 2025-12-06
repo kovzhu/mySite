@@ -185,6 +185,13 @@ async def custom_site():
     screen.fill( (0,0,0,0) )
     pygame.display.flip()
 
+    # Patch main.py to fix asyncio.run() conflict in web environment
+    code = main.read_text()
+    if "asyncio.run(main())" in code:
+        print("Patching main.py: Replacing asyncio.run(main()) with await main()")
+        code = code.replace("asyncio.run(main())", "await main()")
+        main.write_text(code)
+
     await shell.runpy(main, callback=ui_callback)
 
 
