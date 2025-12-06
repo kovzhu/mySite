@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathLab: The Ultimate Study Guide</title>
+
+    <!-- 1. Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- 3. Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&family=Montserrat:wght@700;800&family=Nunito:wght@400;600;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #F3F4F6;
+        }
+
+        .font-header {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Custom Scrollbar for the app container */
+        .app-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .app-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .app-scroll::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        .app-scroll::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+
+<body class="h-screen w-full flex items-center justify-center p-2 md:p-6">
+
+    <div id="root" class="w-full max-w-6xl h-full max-h-[900px]"></div>
+
+    <script type="text/babel">
+        {% raw %}
+        const { useState, useEffect, useRef } = React;
+
+        // --- ICONS ---
+        const Icons = {
+            Home: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>,
+            ArrowLeft: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>,
+            Calc: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="14"></line><line x1="8" y1="14" x2="8" y2="14"></line><line x1="12" y1="14" x2="12" y2="14"></line><line x1="16" y1="18" x2="16" y2="18"></line><line x1="8" y1="18" x2="8" y2="18"></line><line x1="12" y1="18" x2="12" y2="18"></line></svg>,
+            Shapes: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>,
+            Percent: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg>,
+            Graph: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>,
+            Variable: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+        };
+
+        // --- CHAPTER 1: ARITHMETIC GAME (Integer War) ---
+        const IntegerWar = () => {
+            const [score, setScore] = useState(0);
+            const [num1, setNum1] = useState(0);
+            const [num2, setNum2] = useState(0);
+            const [message, setMessage] = useState("Add the numbers!");
+
+            const generate = () => {
+                setNum1(Math.floor(Math.random() * 20) - 10);
+                setNum2(Math.floor(Math.random() * 20) - 10);
+                setMessage("What is the sum?");
+            };
+
+            useEffect(generate, []);
+
+            const checkAnswer = (ans) => {
+                if (ans === num1 + num2) {
+                    setScore(s => s + 1);
+                    setMessage("Correct! Next...");
+                    setTimeout(generate, 1000);
+                } else {
+                    setMessage("Try again!");
+                }
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center h-full">
+                    <h2 className="text-3xl font-header text-orange-600 mb-2">Integer War</h2>
+                    <p className="text-slate-500 mb-8">Master positive and negative numbers.</p>
+
+                    <div className="flex gap-4 mb-8">
+                        <div className={`w-24 h-32 rounded-xl flex items-center justify-center text-4xl font-bold shadow-lg text-white ${num1 < 0 ? 'bg-red-500' : 'bg-slate-800'}`}>
+                            {num1}
+                        </div>
+                        <div className="flex items-center text-2xl text-slate-400">+</div>
+                        <div className={`w-24 h-32 rounded-xl flex items-center justify-center text-4xl font-bold shadow-lg text-white ${num2 < 0 ? 'bg-red-500' : 'bg-slate-800'}`}>
+                            {num2}
+                        </div>
+                    </div>
+
+                    <div className="text-xl font-bold text-slate-700 mb-6">{message}</div>
+
+                    <div className="grid grid-cols-3 gap-4">
+                        {[num1 + num2, num1 + num2 + 1, num1 + num2 - 2].sort(() => Math.random() - 0.5).map((opt, i) => (
+                            <button key={i} onClick={() => checkAnswer(opt)}
+                                className="bg-orange-100 hover:bg-orange-200 text-orange-800 font-bold py-3 px-6 rounded-lg transition-colors border-2 border-orange-200">
+                                {opt}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="mt-8 font-mono text-sm text-slate-400">Score: {score}</div>
+                </div>
+            );
+        };
+
+        // --- CHAPTER 2: GEOMETRY GAME (Polygon Explorer) ---
+        const PolygonExplorer = () => {
+            const [sides, setSides] = useState(3);
+
+            // Calculate polygon points
+            const radius = 100;
+            const center = 150;
+            const points = Array.from({ length: sides }).map((_, i) => {
+                const angle = (i * 2 * Math.PI) / sides - Math.PI / 2;
+                return `${center + radius * Math.cos(angle)},${center + radius * Math.sin(angle)}`;
+            }).join(' ');
+
+            const interiorAngle = ((sides - 2) * 180) / sides;
+            const sumAngles = (sides - 2) * 180;
+
+            return (
+                <div className="flex flex-col md:flex-row items-center justify-center h-full gap-8">
+                    <div className="relative w-[300px] h-[300px] bg-green-50 rounded-full border-4 border-green-100 flex items-center justify-center shadow-inner">
+                        <svg width="300" height="300">
+                            <polygon points={points} fill="rgba(134, 239, 172, 0.5)" stroke="#15803d" strokeWidth="4" />
+                            <circle cx={center} cy={center} r="3" fill="#15803d" />
+                        </svg>
+                    </div>
+
+                    <div className="w-full max-w-xs bg-white p-6 rounded-xl shadow-lg border border-green-100">
+                        <h2 className="text-2xl font-header text-green-700 mb-4">Polygon Lab</h2>
+
+                        <label className="block text-sm font-bold text-slate-500 mb-2">Number of Sides: {sides}</label>
+                        <input type="range" min="3" max="12" value={sides} onChange={(e) => setSides(Number(e.target.value))}
+                            className="w-full h-2 bg-green-200 rounded-lg appearance-none cursor-pointer accent-green-600 mb-6" />
+
+                        <div className="space-y-3">
+                            <div className="flex justify-between border-b pb-2">
+                                <span className="text-slate-600">Shape Name</span>
+                                <span className="font-bold text-green-700">
+                                    {['Triangle', 'Square', 'Pentagon', 'Hexagon', 'Heptagon', 'Octagon', 'Nonagon', 'Decagon', 'Hendecagon', 'Dodecagon'][sides - 3]}
+                                </span>
+                            </div>
+                            <div className="flex justify-between border-b pb-2">
+                                <span className="text-slate-600">Interior Angle Sum</span>
+                                <span className="font-bold text-green-700">{sumAngles}°</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-600">Each Angle</span>
+                                <span className="font-bold text-green-700">{interiorAngle.toFixed(1)}°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- CHAPTER 3: FRACTIONS (The Equality Triad) ---
+        const FractionsTriad = () => {
+            const [val, setVal] = useState(0.5);
+
+            const handleSlider = (e) => setVal(parseFloat(e.target.value));
+
+            // Simplified fraction logic
+            const getFraction = (decimal) => {
+                const gcd = (a, b) => b ? gcd(b, a % b) : a;
+                const len = decimal.toString().length - 2;
+                let denominator = Math.pow(10, len);
+                let numerator = decimal * denominator;
+                const divisor = gcd(numerator, denominator);
+                if (decimal === 1) return "1/1";
+                if (decimal === 0) return "0";
+                return `${Math.round(numerator / divisor)} / ${Math.round(denominator / divisor)}`;
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center h-full">
+                    <h2 className="text-3xl font-header text-pink-600 mb-8">The Equality Triad</h2>
+
+                    <div className="relative w-full max-w-md h-64 mb-8">
+                        {/* Triangle Graphic */}
+                        <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <path d="M50 10 L90 90 L10 90 Z" fill="none" stroke="#fbcfe8" strokeWidth="2" strokeDasharray="4" />
+                        </svg>
+
+                        {/* Decimal Node */}
+                        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-xl shadow-lg border-2 border-pink-200 text-center w-32">
+                            <div className="text-xs text-slate-400 font-bold uppercase">Decimal</div>
+                            <div className="text-2xl font-mono font-bold text-pink-600">{val.toFixed(2)}</div>
+                        </div>
+
+                        {/* Percent Node */}
+                        <div className="absolute bottom-0 right-0 transform translate-y-1/2 bg-white p-4 rounded-xl shadow-lg border-2 border-pink-200 text-center w-32">
+                            <div className="text-xs text-slate-400 font-bold uppercase">Percent</div>
+                            <div className="text-2xl font-mono font-bold text-pink-600">{Math.round(val * 100)}%</div>
+                        </div>
+
+                        {/* Fraction Node */}
+                        <div className="absolute bottom-0 left-0 transform translate-y-1/2 bg-white p-4 rounded-xl shadow-lg border-2 border-pink-200 text-center w-32">
+                            <div className="text-xs text-slate-400 font-bold uppercase">Fraction</div>
+                            <div className="text-2xl font-mono font-bold text-pink-600">{getFraction(val)}</div>
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-md mt-12 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                        <label className="block text-center text-slate-500 font-bold mb-4">Adjust Value</label>
+                        <input type="range" min="0" max="1" step="0.01" value={val} onChange={handleSlider}
+                            className="w-full h-3 bg-pink-100 rounded-lg appearance-none cursor-pointer accent-pink-600" />
+
+                        <div className="flex justify-between mt-4">
+                            <button onClick={() => setVal(0.25)} className="text-xs bg-slate-100 px-3 py-1 rounded hover:bg-pink-100">1/4</button>
+                            <button onClick={() => setVal(0.33)} className="text-xs bg-slate-100 px-3 py-1 rounded hover:bg-pink-100">1/3</button>
+                            <button onClick={() => setVal(0.50)} className="text-xs bg-slate-100 px-3 py-1 rounded hover:bg-pink-100">1/2</button>
+                            <button onClick={() => setVal(0.75)} className="text-xs bg-slate-100 px-3 py-1 rounded hover:bg-pink-100">3/4</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- CHAPTER 4: ALGEBRA (Function Machine) ---
+        const FunctionMachine = () => {
+            const [inputVal, setInputVal] = useState(5);
+            const [isAnimating, setIsAnimating] = useState(false);
+            const [outputVal, setOutputVal] = useState(null);
+            const [mode, setMode] = useState('forward');
+
+            const rule = (x) => 2 * x + 3;
+            const inverseRule = (y) => (y - 3) / 2;
+
+            const processMachine = () => {
+                setIsAnimating(true);
+                setOutputVal(null);
+                setTimeout(() => {
+                    const result = mode === 'forward' ? rule(inputVal) : inverseRule(inputVal);
+                    const cleanResult = Number.isInteger(result) ? result : parseFloat(result.toFixed(2));
+                    setOutputVal(cleanResult);
+                    setIsAnimating(false);
+                }, 1000);
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center h-full">
+                    <div className={`relative rounded-3xl p-8 w-64 text-center shadow-xl transition-all duration-500 mb-8 ${mode === 'forward' ? 'bg-blue-500' : 'bg-indigo-600'}`}>
+                        <div className="bg-slate-900 border-4 border-slate-400 h-20 mb-4 rounded-lg flex items-center justify-center shadow-md">
+                            <span className="text-green-400 font-mono text-xl font-bold animate-pulse">
+                                {isAnimating ? '...' : (mode === 'forward' ? 'f(x) = 2x+3' : 'f⁻¹(x) = (x-3)/2')}
+                            </span>
+                        </div>
+                        <div className="text-white font-bold text-sm tracking-widest opacity-80">MATH-O-MATIC 3000</div>
+                    </div>
+
+                    <div className="flex items-center gap-4 bg-white p-6 rounded-2xl shadow-lg border border-slate-100">
+                        <div className="text-center">
+                            <label className="block text-xs font-bold text-slate-400 mb-1">INPUT</label>
+                            <input type="number" value={inputVal} onChange={(e) => setInputVal(Number(e.target.value))}
+                                className="w-16 text-center border-2 border-slate-200 rounded-lg py-2 text-xl font-bold text-slate-700 focus:border-blue-500 outline-none" />
+                        </div>
+
+                        <button onClick={processMachine} disabled={isAnimating}
+                            className={`p-4 rounded-full text-white shadow-md transform active:scale-95 transition-all ${isAnimating ? 'bg-slate-300' : 'bg-blue-500 hover:bg-blue-600'}`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        </button>
+
+                        <div className="text-center">
+                            <label className="block text-xs font-bold text-slate-400 mb-1">OUTPUT</label>
+                            <div className="w-16 h-[46px] flex items-center justify-center bg-slate-100 rounded-lg text-xl font-bold text-blue-600 border-2 border-transparent">
+                                {outputVal !== null ? outputVal : '?'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onClick={() => { setMode(mode === 'forward' ? 'inverse' : 'forward'); setOutputVal(null); }}
+                        className="mt-6 text-sm font-bold text-slate-500 hover:text-blue-600 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"></path><path d="M3 3v9h9"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 12"></path><path d="M21 21v-9h-9"></path></svg>
+                        Switch Function Mode
+                    </button>
+                </div>
+            );
+        };
+
+        // --- CHAPTER 5: STATISTICS (Bar Chart Builder) ---
+        const ChartBuilder = () => {
+            const [data, setData] = useState([
+                { label: 'A', val: 5 }, { label: 'B', val: 8 }, { label: 'C', val: 3 }, { label: 'D', val: 6 }
+            ]);
+
+            const updateVal = (idx, newVal) => {
+                const newData = [...data];
+                newData[idx].val = Number(newVal);
+                setData(newData);
+            };
+
+            const maxVal = Math.max(...data.map(d => d.val), 10);
+
+            return (
+                <div className="flex flex-col items-center justify-center h-full w-full">
+                    <h2 className="text-2xl font-header text-purple-600 mb-6">Live Data Visualizer</h2>
+
+                    <div className="flex items-end justify-center gap-4 h-64 w-full max-w-lg border-b-2 border-slate-300 pb-0 mb-8 px-8">
+                        {data.map((d, i) => (
+                            <div key={i} className="flex-1 flex flex-col items-center group relative">
+                                <div className="text-sm font-bold text-purple-600 mb-2 opacity-0 group-hover:opacity-100 transition-opacity absolute -top-8">{d.val}</div>
+                                <div style={{ height: `${(d.val / maxVal) * 200}px` }}
+                                    className="w-full bg-purple-400 rounded-t-lg transition-all duration-500 hover:bg-purple-500 shadow-md"></div>
+                                <div className="mt-2 font-bold text-slate-500">{d.label}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-4 w-full max-w-lg">
+                        {data.map((d, i) => (
+                            <div key={i} className="flex flex-col">
+                                <label className="text-xs text-center text-slate-400 font-bold mb-1">Bar {d.label}</label>
+                                <input type="number" value={d.val} onChange={(e) => updateVal(i, e.target.value)}
+                                    className="border-2 border-slate-200 rounded p-2 text-center font-bold text-purple-800 focus:border-purple-500 outline-none" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAIN APP SHELL ---
+        const App = () => {
+            const [view, setView] = useState('menu');
+
+            const menuItems = [
+                { id: 'arithmetic', title: 'Number & Arithmetic', color: 'bg-orange-500', icon: <Icons.Calc />, desc: 'Master integers with the Integer War game.' },
+                { id: 'geometry', title: 'Geometry', color: 'bg-green-600', icon: <Icons.Shapes />, desc: 'Explore polygons and interior angles.' },
+                { id: 'fractions', title: 'Fractions & %', color: 'bg-pink-500', icon: <Icons.Percent />, desc: 'Visualize the connection between values.' },
+                { id: 'algebra', title: 'Algebra', color: 'bg-blue-500', icon: <Icons.Variable />, desc: 'Input and Output with the Function Machine.' },
+                { id: 'stats', title: 'Statistics', color: 'bg-purple-600', icon: <Icons.Graph />, desc: 'Build dynamic charts in real-time.' },
+            ];
+
+            const renderView = () => {
+                switch (view) {
+                    case 'arithmetic': return <IntegerWar />;
+                    case 'geometry': return <PolygonExplorer />;
+                    case 'fractions': return <FractionsTriad />;
+                    case 'algebra': return <FunctionMachine />;
+                    case 'stats': return <ChartBuilder />;
+                    default: return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+                            <div className="col-span-full text-center mb-8">
+                                <h1 className="text-4xl md:text-6xl font-header font-extrabold text-slate-800 mb-4 tracking-tight">MathLab</h1>
+                                <p className="text-slate-500 text-lg">Select a module to begin your experiment.</p>
+                            </div>
+                            {menuItems.map(item => (
+                                <button key={item.id} onClick={() => setView(item.id)}
+                                    className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-xl transition-all border border-slate-100 text-left group hover:-translate-y-1">
+                                    <div className={`${item.color} w-12 h-12 rounded-xl flex items-center justify-center text-white mb-4 shadow-md group-hover:scale-110 transition-transform`}>
+                                        {item.icon}
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-800 mb-2">{item.title}</h3>
+                                    <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+                                </button>
+                            ))}
+                        </div>
+                    );
+                }
+            };
+
+            return (
+                <div className="bg-white w-full h-full rounded-3xl shadow-2xl overflow-hidden flex flex-col relative border border-slate-200">
+                    {/* Navigation Bar */}
+                    <div className="h-16 border-b border-slate-100 flex items-center px-6 justify-between bg-white z-10">
+                        {view !== 'menu' ? (
+                            <button onClick={() => setView('menu')} className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold transition-colors">
+                                <Icons.ArrowLeft /> <span>Back to Menu</span>
+                            </button>
+                        ) : (
+                            <div className="flex items-center gap-4">
+                                <span className="font-header font-bold text-slate-800 flex items-center gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                                    <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                                </span>
+                                <a href="/lab" className="text-xs font-bold text-xs text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors">
+                                    Exit Lab
+                                </a>
+                            </div>
+                        )}
+                        <a href="https://github.com/kovzhu/mySite" target="_blank" className="text-xs font-bold text-slate-300 hover:text-slate-500 uppercase tracking-widest">
+                            kovzhu / Lab
+                        </a>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="flex-1 overflow-y-auto app-scroll p-6 bg-slate-50">
+                        {renderView()}
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+        {% endraw %}
+    </script>
+</body>
+
+</html>

@@ -721,7 +721,12 @@ def ideas():
 def lab():
     """Lab page showcasing Python projects and tools."""
     projects = LabProject.query.order_by(LabProject.created_at.desc()).all()
-    return render_template("lab.html", projects=projects)
+    return render_template("lab_pages/lab.html", projects=projects)
+
+@app.route("/lab/math-games")
+def lab_math_games():
+    """Math Games AI Lab page."""
+    return render_template("lab_pages/math_games.html")
 
 @app.route("/lab/add", methods=["POST"])
 @admin_required
