@@ -652,8 +652,8 @@ def index():
     Returns:
         Rendered index.html template with recent photos and projects
     """
-    # Get 6 most recent photos for the gallery section (sorted by year and filename descending)
-    recent_photos = Photo.query.order_by(Photo.year.desc(), Photo.filename.desc()).limit(6).all()
+    # Get 6 most recent photos for the gallery section (sorted by upload date to ensure new uploads show up)
+    recent_photos = Photo.query.order_by(Photo.created_at.desc()).limit(6).all()
     # Get 6 most recent blog posts for the humanity section
     recent_posts = Post.query.order_by(Post.created_at.desc()).limit(6).all()
     # Get 3 most recent lab projects
