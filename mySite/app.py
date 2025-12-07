@@ -25,7 +25,10 @@ from flask import (
     send_from_directory,
     make_response,
     jsonify,
+    Response,
 )
+import re
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import (
@@ -1257,6 +1260,56 @@ def guitar_collection():
     videos = GuitarVideo.query.order_by(GuitarVideo.created_at.desc()).all()
     photos = GuitarPhoto.query.order_by(GuitarPhoto.created_at.desc()).all()
     return render_template("collections/guitar.html", videos=videos, photos=photos)
+
+
+@app.route('/video_feed/<collection_type>/<filename>')
+def video_feed(collection_type, filename):
+    """
+    Stream video with support for Range requests (seeking).
+    """
+    if collection_type == 'guitar':
+        directory = os.path.join(basedir, "static", "guitar_videos")
+    elif collection_type == 'collection':
+        directory = os.path.join(basedir, "static", "collection_videos")
+    else:
+        abort(404)
+        
+    path = os.path.join(directory, filename)
+    if not os.path.exists(path):
+        abort(404)
+        
+    file_size = os.path.getsize(path)
+    range_header = request.headers.get('Range', None)
+    
+    if not range_header:
+        return send_from_directory(directory, filename)
+        
+    byte1, byte2 = 0, None
+    m = re.search(r'bytes=(\d+)-(\d*)', range_header)
+    if m:
+        g = m.groups()
+        if g[0]: byte1 = int(g[0])
+        if g[1]: byte2 = int(g[1])
+        
+    length = file_size - byte1
+    if byte2 is not None:
+        length = byte2 + 1 - byte1
+        
+    def generate():
+        with open(path, 'rb') as f:
+            f.seek(byte1)
+            remaining = length
+            chunk_size = 1024 * 64 
+            while remaining > 0:
+                chunk = f.read(min(chunk_size, remaining))
+                if not chunk: break
+                yield chunk
+                remaining -= len(chunk)
+                
+    rv = Response(generate(), 206, mimetype='video/mp4', direct_passthrough=True)
+    rv.headers.add('Content-Range', 'bytes {0}-{1}/{2}'.format(byte1, byte1 + length - 1, file_size))
+    rv.headers.add('Accept-Ranges', 'bytes')
+    return rv
 
 
 @app.route("/collections/guitar/upload-video", methods=["GET", "POST"])

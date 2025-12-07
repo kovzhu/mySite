@@ -191,7 +191,7 @@
         <div class="video-card">
             <div class="video-wrapper">
                 <video controls preload="metadata">
-                    <source src="{{ url_for('static', filename='collection_videos/' + video.filename) }}"
+                    <source src="{{ url_for('video_feed', collection_type='collection', filename=video.filename) }}"
                         type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
