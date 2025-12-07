@@ -28,6 +28,7 @@ from flask import (
     Response,
 )
 import re
+import subprocess
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -1262,6 +1263,55 @@ def guitar_collection():
     return render_template("collections/guitar.html", videos=videos, photos=photos)
 
 
+def compress_video(input_path):
+    """
+    Compress video using ffmpeg.
+    Targeting web-optimized MP4 (H.264 + AAC).
+    """
+    try:
+        # Create a temporary output path
+        directory = os.path.dirname(input_path)
+        filename = os.path.basename(input_path)
+        temp_output = os.path.join(directory, f"min_{filename}")
+        
+        # FFmpeg command:
+        # -i input_path: Input file
+        # -vcodec libx264: H.264 video codec (widely supported)
+        # -crf 28: Constant Rate Factor (23-28 is good range, higher = lower quality/size)
+        # -preset fast: Balance between speed and compression efficiency
+        # -acodec aac: AAC audio codec
+        # -movflags +faststart: Move metadata to front for faster streaming start
+        # -vf scale='min(1280,iw)':-2: Scale width to max 1280px (720p), keeping aspect ratio. 
+        #   iw = input width. If original is smaller, it won't upscale. -2 ensures height is even.
+        
+        command = [
+            'ffmpeg', '-y',
+            '-i', input_path,
+            '-vcodec', 'libx264',
+            '-crf', '28',
+            '-preset', 'fast',
+            '-acodec', 'aac',
+            '-movflags', '+faststart',
+            '-vf', "scale='min(1280,iw)':-2",
+            temp_output
+        ]
+        
+        # Run ffmpeg
+        subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        # If successful, replace original with compressed version
+        if os.path.exists(temp_output):
+            os.replace(temp_output, input_path)
+            return True
+            
+    except Exception as e:
+        print(f"Error processing video: {e}")
+        # Clean up temp file if it exists
+        if os.path.exists(temp_output):
+            os.remove(temp_output)
+        return False
+
+
 @app.route('/video_feed/<collection_type>/<filename>')
 def video_feed(collection_type, filename):
     """
@@ -1332,6 +1382,9 @@ def upload_guitar_video():
         video_path = os.path.join(basedir, "static", "guitar_videos", video_filename)
         os.makedirs(os.path.dirname(video_path), exist_ok=True)
         video_file.save(video_path)
+        
+        # Compress video
+        compress_video(video_path)
         
         # Create database entry
         new_video = GuitarVideo(
@@ -1457,6 +1510,9 @@ def upload_collection_video():
         video_path = os.path.join(basedir, "static", "collection_videos", video_filename)
         os.makedirs(os.path.dirname(video_path), exist_ok=True)
         video_file.save(video_path)
+        
+        # Compress video
+        compress_video(video_path)
         
         # Create database entry
         new_video = CollectionVideo(
